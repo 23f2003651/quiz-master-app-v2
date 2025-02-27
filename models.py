@@ -5,6 +5,11 @@ from flask_security.models import fsqla_v3 as fsqla
 
 fsqla.FsModels.set_db_info(db)
 
+class UserRoles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    role_id = db.Column(db.Integer, db.ForeignKey("role.id", ondelete="CASCADE"))
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), nullable=False, unique=True)
@@ -15,7 +20,7 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(65), unique = True, nullable = False)
     
     role_id = db.Column(db.Integer, db.ForeignKey("role.id"))
-    roles = db.relationship('Role')
+    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
     
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
