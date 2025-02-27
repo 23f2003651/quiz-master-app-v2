@@ -13,18 +13,18 @@ def create_app():
 
     db.init_app(app)
 
-    # with app.app_context():
-    #     from models import User, Role
-    #     from flask_security import SQLAlchemyUserDatastore
+    with app.app_context():
+        from models import User, Role
+        from flask_security import SQLAlchemyUserDatastore
 
-    #     user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+        user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 
-    #     security.init_app(app, user_datastore)
+        security.init_app(app, user_datastore)
 
-    #     db.create_all()
-    #     create_data(user_datastore)
+        db.create_all()
+        create_data(user_datastore)
 
-    views.create_view(app)
+    views.create_view(app, user_datastore)
     
     # setup API
     # resources.api.init_app(app)
@@ -38,5 +38,3 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
-
-    

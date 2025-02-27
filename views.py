@@ -3,7 +3,7 @@ from flask_security import SQLAlchemyUserDatastore
 from flask_security.utils import hash_password, verify_password
 from extensions import db
 
-def create_view(app):
+def create_view(app, user_datastore: SQLAlchemyUserDatastore):
 
     @app.route('/')
     def home():
