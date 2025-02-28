@@ -27,7 +27,7 @@ def create_app():
     views.create_view(app, user_datastore)
     
     # setup API
-    # resources.api.init_app(app)
+    resources.api.init_app(app)
 
     app.config["WTF_CSRF_CHECK_DEFAULT"] = False
     app.config["SECURITY_CSRF_PROTECT_MECHANISHMS"] = []

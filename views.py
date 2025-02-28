@@ -9,10 +9,25 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
     def home():
         return render_template('index.html')
     
-    @app.route('/user-login')
+    @app.route('/user-login', methods=['POST'])
     def user_login():
         
-        return "Hello user-login page"
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({"message": "not valid email or password"}), 400
+        
+        user = user_datastore.find_user(email=email)
+        
+        if not user:
+            return jsonify({"message": "invalid user"}), 401
+        
+        if verify_password(password, user.password):
+            return jsonify({"token": user.get_auth_token(), "role": "user", "id": user.id, "email": user.email}), 200
+        else:
+            return jsonify({"message": "incorrect password"}), 401
     
     @app.route('/user-register', methods=['POST'])
     def user_register():
@@ -35,11 +50,16 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         
         # creating new user
         try:
-            new_user = user_datastore.create_user(email=email, username=username, password=hash_password(password1), qualification=qualification, active=True)
+            new_user = user_datastore.create_user(email=email, username=username, password=hash_password(password1), qualification=qualification, active=False, role_id=2)
             user_datastore.add_role_to_user(new_user, role)
         except Exception as e:
             print("Error creating user: ", e)
             return jsonify({"message": "Error creating user"}), 500
         
-        return jsonify({"message": "User created successfully"}), 201
+        try:
+            db.session.commit()
+            return jsonify({"message": "User created successfully"}), 201
+        except Exception as e:
+            print("Error commiting user: ", e)
+            return jsonify({"message": "Error creating user"}), 500
     

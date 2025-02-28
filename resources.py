@@ -26,10 +26,15 @@ class UserProfile(Resource):
     @marshal_with(user_fields)
     def get(self, id=None):
         if id:
-            user = User.query.get(id)
+            user = User.query.filter_by(id=id).first()
             if user:
-                return users, 200
+                return user, 200
             return {"message": "User not found"}, 404
         
         users = User.query.all()
-        return users, 200        
+        if users:
+            return users, 200
+        return {"message": "No users found"}, 404
+
+# api routes
+api.add_resource(UserProfile, '/users/<int:id>', '/users')
