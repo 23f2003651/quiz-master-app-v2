@@ -28,7 +28,6 @@ const Login = {
 		async submitInfo() {
 			const url = window.location.origin;
 
-			console.log("Submitting Info");
 			const res = await axios.post(url + '/user-login', {
 				email: this.email,
 				password: this.password
@@ -40,10 +39,18 @@ const Login = {
 
 			if (res.status == 200) {
 				console.log("Login Successful");
-				console.log(res.data);
+
+				// set session storage variables
+				sessionStorage.setItem('token', res.data.token);
+				sessionStorage.setItem('email', res.data.email);
+				sessionStorage.setItem('id', res.data.id);
+
+				// set vuex store variables
+				this.$store.commit('setLogin');
+				this.$store.commit('setToken', res.data.token);
+
 				this.$router.push('/user-dashboard')
 			} else {
-				console.log(res);
 				console.log("Login Failed");
 				console.log(res.data);
 			}

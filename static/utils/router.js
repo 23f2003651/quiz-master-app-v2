@@ -33,13 +33,16 @@ const router = new VueRouter({
     routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   if (!store.state.loggedIn && to.path !== "/user-login" && to.path !== "/" && to.path !== "/inf-register" && to.path !== "/spon-register") {
-//     next({ path: "/user-login" });
-//   }
-//   else {
-//     next();
-//   }
-// })
+router.beforeEach((to, from, next) => {
+  if (!store.state.loggedIn && to.path !== "/login" && to.path !== "/" && to.path !== "/user-register") {
+    next({ path: "/login" });
+  }
+  else if (store.state.loggedIn && (to.path === "/login" || to.path === "/user-register")) {
+    next({ path: "/user-dashboard" }); // Redirect logged-in users away from login/register
+  }
+  else {
+    next();
+  }
+})
 
 export default router;

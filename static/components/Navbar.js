@@ -8,17 +8,52 @@ const Navbar = {
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+
         <div class="navbar-nav">
-          <router-link class="nav-link" to="/">Home</router-link>
-          <router-link class="nav-link" to="/login">Login</router-link>
+          <router-link v-for="link in navLinks" :key="link.text" :to="link.to" class="nav-link">
+            {{ link.text }}
+          </router-link>
         </div>
+
         <div class="navbar-nav ms-auto">
-          <a class="nav-link text-danger fw-bold" style="cursor: pointer">Logout</a>
+          <a v-if="state.loggedIn" @click="logout" class="nav-link text-danger fw-bold" style="cursor: pointer">Logout</a>
         </div>
       </div>
     </div>
   </nav>
-  `
+  `,
+
+  computed: {
+    navLinks() {
+      const role = this.role;
+      if (this.state.loggedIn) {
+        return [
+					{ to: `/user-dashboard`, text: "Dashboard" },
+          { to: `/user-scores`, text: "Scores" },
+          { to: `/user-summary`, text: "Summary" },
+        ];
+      } else {
+        return [
+          { to: "/", text: "Home" },
+          { to: "/login", text: "Login" },
+          { to: "/user-register", text: "Register" },
+        ];
+      }
+    },
+
+    state() {
+      return this.$store.state;
+    }
+  },
+
+  methods: {
+    logout() {
+      sessionStorage.clear();
+      this.$store.commit('logout');
+      console.log("Logout Successful");
+      this.$router.push('/');
+    }
+  }
 }
 
 export default Navbar;

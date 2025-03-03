@@ -5,7 +5,14 @@ This is the AppDev-2 Project on Quiz Master App V2
 - [X] Database setup
 - [X] Get users data API
 - [X] User register route in views.py
-- [ ] User login and authentication
+- [X] User login and authentication
+  - [X] logging in and token creation
+  - [X] redirect to user dashboard after logging in
+  - [X] can't go back to login/register after logged in
+  - [X] can't go to user pages when logged out
+- [ ] User register page
+  - [ ] create a new user using register page
+  - [ ] redirect to login page after successful registeration
 - [ ] Basic UI for user & admin pages
 - [ ] Giving functionality to admin pages
 - [ ] Giving functionality to user pages
