@@ -1,6 +1,12 @@
+// router and store
 import router from "./utils/router.js";
-import Navbar from "./components/Navbar.js";
 import store from "./utils/store.js";
+
+// components
+import Navbar from "./components/Navbar.js";
+import LoginIcon from "./components/LoginIcon.js";
+
+Vue.component("LoginIcon", LoginIcon);
 
 console.log("app.js loaded");
 
@@ -11,12 +17,16 @@ new Vue({
       <Navbar />
       <div>
         <router-view />
+        <div id="alert" v-if="$store.state.showAlert" :class="['alert', $store.state.alertType, 'global-alert', 'fw-bold']" role="alert">
+          {{ $store.state.alertMessage }}
+          <button type="button" class="fw-bold btn-close" @click="$store.commit('hideAlert')"></button>
+        </div>
       </div>
     </div>
   `,
   router,
   store,
   components: {
-    Navbar
+    Navbar,
   }
 });

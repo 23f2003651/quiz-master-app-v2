@@ -12,16 +12,20 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(100), nullable=False)
     qualification = db.Column(db.String(50), nullable=False)
     active = db.Column(db.Boolean)
-    fs_uniquifier = db.Column(db.String(65), unique = True, nullable = False)
+    fs_uniquifier = db.Column(db.String(65), unique=True, nullable=False)
     
-    role_id = db.Column(db.Integer, db.ForeignKey("role.id"))
-    roles = db.relationship('Role')
-    
+    roles = db.relationship('Role', secondary='user_roles', backref=db.backref('users', lazy='dynamic'))
+
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
-    
+
+class UserRoles(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id', ondelete='CASCADE'))
+
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
@@ -60,4 +64,4 @@ class Scores(db.Model):
     
     quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    
+

@@ -1,4 +1,3 @@
-
 const Navbar = {
   template: `
   <nav style="height: 60px; background: rgba(0,0,0,0.75) !important; color: white; display: flex; align-items: center; padding: 0 20px;" class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
@@ -44,14 +43,18 @@ const Navbar = {
     state() {
       return this.$store.state;
     }
-  },
+  },  
 
   methods: {
     logout() {
+      this.$store.commit('setAlert', { message: "Logged out", type: "alert-success" });
       sessionStorage.clear();
       this.$store.commit('logout');
       console.log("Logout Successful");
-      this.$router.push('/');
+
+      this.$nextTick(() => {
+        this.$router.push('/login');
+      });
     }
   }
 }

@@ -35,6 +35,17 @@ class UserProfile(Resource):
         if users:
             return users, 200
         return {"message": "No users found"}, 404
+    
+    def post(self):
+        data = request.get_json()
+        
+        email = data.get('email')
+        username = data.get('username')
+        password = data.get('password')
+        password2 = data.get('password2')
+        qualification = data.get('qualification')
+        
+        
 
 # api routes
 api.add_resource(UserProfile, '/users/<int:id>', '/users')

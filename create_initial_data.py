@@ -2,7 +2,7 @@ from flask_security.datastore import SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
 from extensions import db
 
-def create_data(user_datastore:SQLAlchemyUserDatastore):
+def create_data(user_datastore: SQLAlchemyUserDatastore):
     print("###Creating Data###")
 
     # create roles
@@ -11,11 +11,9 @@ def create_data(user_datastore:SQLAlchemyUserDatastore):
 
     # create user data
     if not user_datastore.find_user(email="admin@gmail.com"):
-        admin_user = user_datastore.create_user(email="admin@gmail.com", password=hash_password("admin"), username ="Admin", qualification="Admin", active=True, roles=[admin_role])
-        admin_user.role_id = admin_role.id
+        admin_user = user_datastore.create_user(email="admin@gmail.com", password=hash_password("admin"), username="Admin", qualification="Admin", active=True, roles=[admin_role])
 
     if not user_datastore.find_user(email="user@gmail.com"):
         user_user = user_datastore.create_user(email="user@gmail.com", password=hash_password("user"), username="User", qualification="User", active=False, roles=[user_role])
-        user_user.role_id = user_role.id
 
     db.session.commit()

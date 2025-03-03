@@ -25,15 +25,18 @@
     
     <!-- Custom CSS file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styling/users/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styling/users/register.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styling/alert/alert.css') }}">
 
 </head>
 
 <body>
     <div id="app"></div>
+    <flash-messages ref="flash"></flash-messages>
 
     <!-- JS file and bootstrap related scripts -->
     <script src="{{url_for('static', filename='app.js')}}" type="module"></script>
-    <script src="{{url_for('static', filename='assets/icons/login-icon.js')}}"></script>
+
 </body>
 
 </html>

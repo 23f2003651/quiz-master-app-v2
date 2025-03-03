@@ -1,19 +1,23 @@
 
 const Login = {
 	template: `
-	
-	<div class="container">
+
+	<div>
+		<div class="login-parent-container">
+
 			<div class="login-container">
 			
-				<h2>Login</h2>
+				<h2 class="login-h2">Login</h2>
 				
-				<input v-model="email" type="email" id="email" name="email" placeholder="Email" required>
+				<input class="login-input" v-model="email" type="email" id="email" name="email" placeholder="Email" required>
 
-				<input v-model="password" id="password" name="password" type="password" placeholder="Password" required>
-				<button @click="submitInfo" id="login" type="submit"><login-icon></login-icon></button>
-			
+				<input class="login-input" v-model="password" id="password" name="password" type="password" placeholder="Password" required>
+				<button class="login-button" @click="submitInfo" id="login" type="submit"><LoginIcon></LoginIcon></button>
+
 			</div>
+
     </div>
+	</div>
 	
 	`,
 
@@ -28,7 +32,8 @@ const Login = {
 		async submitInfo() {
 			const url = window.location.origin;
 
-			const res = await axios.post(url + '/user-login', {
+			try {
+				const res = await axios.post(url + '/user-login', {
 				email: this.email,
 				password: this.password
 			}, {
@@ -40,6 +45,8 @@ const Login = {
 			if (res.status == 200) {
 				console.log("Login Successful");
 
+				this.$store.commit('setAlert', { message: "Logged in as " + this.email, type: "alert-success" });
+
 				// set session storage variables
 				sessionStorage.setItem('token', res.data.token);
 				sessionStorage.setItem('email', res.data.email);
@@ -50,9 +57,12 @@ const Login = {
 				this.$store.commit('setToken', res.data.token);
 
 				this.$router.push('/user-dashboard')
-			} else {
+			} 
+			} catch (error) {
 				console.log("Login Failed");
-				console.log(res.data);
+
+				this.$store.commit('setAlert', { message: "Login Failed", type: "alert-danger" });
+
 			}
 		}
 	}
