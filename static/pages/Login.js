@@ -51,13 +51,18 @@ const Login = {
 				sessionStorage.setItem('token', res.data.token);
 				sessionStorage.setItem('email', res.data.email);
 				sessionStorage.setItem('id', res.data.id);
+				sessionStorage.setItem('role', res.data.role);
 
 				// set vuex store variables
 				this.$store.commit('setLogin');
 				this.$store.commit('setToken', res.data.token);
 
-				this.$router.push('/user-dashboard')
-			} 
+				if (res.data.role == "user") {
+					this.$router.push('/user-dashboard')
+				} else {
+					this.$router.push('/admin-dashboard')
+				}
+			}
 			} catch (error) {
 				console.log("Login Failed");
 

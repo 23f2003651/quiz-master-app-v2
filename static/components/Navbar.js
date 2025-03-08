@@ -26,11 +26,19 @@ const Navbar = {
     navLinks() {
       const role = this.role;
       if (this.state.loggedIn) {
-        return [
+        if (sessionStorage.getItem('role') == 'user') {
+          return [
 					{ to: `/user-dashboard`, text: "Dashboard" },
           { to: `/user-scores`, text: "Scores" },
           { to: `/user-summary`, text: "Summary" },
         ];
+        } else {
+          return [
+					{ to: `/admin-dashboard`, text: "Dashboard" },
+          { to: `/admin-quiz`, text: "Quiz" },
+          { to: `/admin-summary`, text: "Summary" },
+        ];
+        }
       } else {
         return [
           { to: "/", text: "Home" },

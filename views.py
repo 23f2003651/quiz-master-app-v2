@@ -21,12 +21,13 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             return jsonify({"message": "not valid email or password"}), 400
         
         user = user_datastore.find_user(email=email)
+        roles = [role.name for role in user.roles]
         
         if not user:
             return jsonify({"message": "invalid user"}), 401
         
         if verify_password(password, user.password):
-            return jsonify({"token": user.get_auth_token(), "role": "user", "id": user.id, "email": user.email}), 200
+            return jsonify({"token": user.get_auth_token(), "role": roles[0], "id": user.id, "email": user.email}), 200
         else:
             return jsonify({"message": "incorrect password"}), 401
     
