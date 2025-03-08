@@ -21,6 +21,13 @@ subject_fields = {
     'description': fields.String
 }
 
+chapter_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'description': fields.String,
+    'subject_id': fields.Integer
+}
+
 # Request parser
 user_parser = reqparse.RequestParser()
 user_parser.add_argument('email', type=str, required=True, help="Email is required")
@@ -31,6 +38,11 @@ user_parser.add_argument('qualification', type=str, required=True, help="Qualifi
 subject_parser = reqparse.RequestParser()
 subject_parser.add_argument('name', type=str, required=True, help="Name is required")
 subject_parser.add_argument('description', type=str, required=True, help="Description is required")
+
+chapter_parser = reqparse.RequestParser()
+chapter_parser.add_argument('name', type=str, required=True, help="Name is required")
+chapter_parser.add_argument('description', type=str, required=True, help="Description is required")
+chapter_parser.add_argument('subject_id', type=int, required=True, help="Subject ID is required")
 
 class UserAPI(Resource):
     @auth_required('token')
@@ -86,8 +98,47 @@ class SubjectAPI(Resource):
             db.session.rollback();
             return {"message": str(e)}, 500
         
+class ChapterAPI(Resource):
+    @auth_required('token')
+    @marshal_with(chapter_fields)
+    def get(self, id=None):
+        if id:
+            chapter = Chapter.query.filter_by(id=id).first()
+            if chapter:
+                return chapter, 200
+            return {"message": "Chapter not found"}, 404
+        
+        chapters = Chapter.query.all()
+        if chapters:
+            return chapters, 200
+        return {"message": "No chapters found"}, 404
+    
+    @auth_required('token')
+    def post(self):
+        data = request.get_json();
+        
+        name = data.get('name');
+        description = data.get('description');
+        subject_id = data.get('subject_id');
+        
+        if not name or not description or not subject_id:
+            return {"message": "All fields are required"}, 400
+        
+        chapter = Chapter.query.filter_by(name=name).first()
+        if chapter:
+            return {"message": "Chapter already exists"}, 400
+        
+        try:
+            new_chapter = Chapter(name=name, description=description, subject_id=subject_id)
+            db.session.add(new_chapter)
+            db.session.commit()
+            return {"message": "Chapter created successfully"}, 201
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
         
 
 # api routes
 api.add_resource(UserAPI, '/users/<int:id>', '/users')
 api.add_resource(SubjectAPI, '/subjects/<int:id>', '/subjects')
+api.add_resource(ChapterAPI, '/chapters/<int:id>', '/chapters')

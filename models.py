@@ -43,8 +43,9 @@ class Chapter(db.Model):
     
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    datetime_of_quiz = db.Column(DateTime, nullable=False)
     remarks = db.Column(db.String(200), nullable=False)
+    duration = db.Column(db.Integer, nullable=False, default=600)
+    start_time = db.Column(DateTime, nullable=True)
     
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
     
