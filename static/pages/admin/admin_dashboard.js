@@ -1,57 +1,76 @@
 
 const admin_dashboard = {
-  template: `
+  template: /* html */ `
   <div>
 
     <div class="admin-parent-container">
-
       <div class="admin-container">
 
-        <div class="accordion" id="accordionExample">
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-              Accordion Item #1
-            </button>
-          </h2>
-          <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-          </div>
-        </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-              Accordion Item #2
-            </button>
-          </h2>
-          <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-          </div>
-        </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-              Accordion Item #3
-            </button>
-          </h2>
-          <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-            <div class="accordion-body">
-              <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-            </div>
-          </div>
-        </div>
-      </div>
+      <h1>subjects</h1>
 
-      </div>
+        <div v-for="subject in subjects" :key="subject.id">
+          <div class="admin-header" data-bs-toggle="collapse" :data-bs-target="'#subject-'+subject.id">
 
+            <h3 class="fw-bold">
+              {{ subject.name }}
+              <button v-if="subject.chapters.length === 0">Add</button>
+            </h3>
+
+            <div class="btn-group" role="group">
+              <button type="button">edit</button>
+              <button type="button">delete</button>
+            </div>
+          </div>
+
+          <div class="collapse" :id="'subject-' + subject.id">
+            <div v-if="subject.chapters.length === 0" class="card card-body">
+              No chapters available
+            </div>
+
+            <div v-for="chapter in subject.chapters" :key="chapter.id" class="card card-body">
+              {{ chapter.id }} - {{ chapter.name }}
+            </div>
+          </div>
+        </div>
+        
+      </div>
     </div>
 
   </div>
-  `
+  `,
+
+  data() {
+    return {
+      subjects: []
+    }
+  },
+
+  methods: {
+    async getSubjects() {
+      const url = window.location.origin;
+
+      try {
+        const res = await axios.get(url + '/api/subjects', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authentication-Token': sessionStorage.getItem('token')
+          }
+        });
+
+        if (res.status == 200) {
+          console.log("Subjects retrieved");
+          this.subjects = res.data;         
+          console.log(this.subjects[0]);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  },
+
+  mounted() {
+    this.getSubjects();
+  }
 }
 
 export default admin_dashboard;

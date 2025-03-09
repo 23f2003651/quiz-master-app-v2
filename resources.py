@@ -15,17 +15,18 @@ user_fields = {
     'qualification': fields.String
 }
 
-subject_fields = {
-    'id': fields.Integer,
-    'name': fields.String,
-    'description': fields.String
-}
-
 chapter_fields = {
     'id': fields.Integer,
     'name': fields.String,
     'description': fields.String,
     'subject_id': fields.Integer
+}
+
+subject_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'description': fields.String,
+    'chapters': fields.List(fields.Nested(chapter_fields))
 }
 
 quiz_fields = {
