@@ -1,8 +1,14 @@
-body{
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    font-family: Arial, sans-serif;
+}
+
+body{
+    background: linear-gradient(300deg, #667eea, #764ba2);
+    background-size: cover;
+    min-height: 100vh;
+    padding-top: 20px;
 }
 
 .login-parent-container {

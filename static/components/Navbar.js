@@ -9,7 +9,7 @@ const Navbar = {
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
 
         <div class="navbar-nav">
-          <router-link v-for="link in navLinks" :key="link.text" :to="link.to" class="nav-link">
+          <router-link v-for="link in navLinks" :key="link.text" :to="link.to" class="nav-link fw-bold">
             {{ link.text }}
           </router-link>
         </div>

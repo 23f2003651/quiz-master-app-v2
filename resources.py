@@ -28,6 +28,14 @@ chapter_fields = {
     'subject_id': fields.Integer
 }
 
+quiz_fields = {
+    'id': fields.Integer,
+    'remarks': fields.String,
+    'duration': fields.Integer,
+    'start_time': fields.DateTime,
+    'chapter_id': fields.Integer
+}
+
 # Request parser
 user_parser = reqparse.RequestParser()
 user_parser.add_argument('email', type=str, required=True, help="Email is required")
@@ -136,9 +144,52 @@ class ChapterAPI(Resource):
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
+    
+class QuizAPI(Resource):
+    @auth_required('token')
+    @marshal_with(quiz_fields)
+    def get(self, id=None):
+        if id:
+            quiz = Quiz.query.filter_by(id=id).first()
+            if quiz:
+                return quiz, 200
+            return {"message": "Quiz not found"}, 404
         
+        quizzes = Quiz.query.all()
+        if quizzes:
+            return quizzes, 200
+        return {"message": "No quizzes found"}, 404
+    
+    @auth_required('token')
+    def post(self):
+        
+        data = request.get_json();
+        
+        remarks = data.get('remarks');
+        duration = data.get('duration', 600);
+        start_time = data.get('start_time');
+        chapter_id = data.get('chapter_id');
+        
+        if not remarks or not chapter_id:
+            return {"message": "All fields are required"}, 400
+        
+        if start_time:
+            try:
+                start_time = datetime.fromisoformat(start_time)
+            except ValueError:
+                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM:SS"}, 400
+        
+        try:
+            new_quiz = Quiz(remarks=remarks, duration=duration, start_time=start_time, chapter_id=chapter_id)
+            db.session.add(new_quiz)
+            db.session.commit()
+            return {"message": "Quiz created successfully"}, 201
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
 
 # api routes
 api.add_resource(UserAPI, '/users/<int:id>', '/users')
 api.add_resource(SubjectAPI, '/subjects/<int:id>', '/subjects')
 api.add_resource(ChapterAPI, '/chapters/<int:id>', '/chapters')
+api.add_resource(QuizAPI, '/quiz/<int:id>', '/quiz')

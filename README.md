@@ -13,10 +13,13 @@ This is the AppDev-2 Project on Quiz Master App V2
 - [X] User register page
   - [X] create a new user using register page
   - [X] redirect to login page after successful registeration
-- [ ] Establishing API functionality for Subjects, Chapters and Quizes
+- [X] Establishing API functionality for Subjects, Chapters and Quizes
   - [X] GET & POST for Subjects
   - [X] GET & POST for Chapters
-  - [] GET & POST for Quizes
-- [ ] Basic UI for user & admin pages
+  - [X] GET & POST for Quizes
+- [] UI for Admin Pages
+  - [] Basic admin dashboard
+- [] UI for User Pages
+  - [] Basic user dashboard
 - [ ] Giving functionality to admin pages
 - [ ] Giving functionality to user pages
