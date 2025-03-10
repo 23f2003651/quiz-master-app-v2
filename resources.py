@@ -53,6 +53,7 @@ chapter_parser.add_argument('name', type=str, required=True, help="Name is requi
 chapter_parser.add_argument('description', type=str, required=True, help="Description is required")
 chapter_parser.add_argument('subject_id', type=int, required=True, help="Subject ID is required")
 
+# Users API
 class UserAPI(Resource):
     @auth_required('token')
     @marshal_with(user_fields)
@@ -68,6 +69,7 @@ class UserAPI(Resource):
             return users, 200
         return {"message": "No users found"}, 404
         
+# Subjects API
 class SubjectAPI(Resource):
     @auth_required('token')
     @marshal_with(subject_fields)
@@ -106,7 +108,48 @@ class SubjectAPI(Resource):
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
+    
+    @auth_required('token')
+    def delete(self, id):
+        subject = Subject.query.filter_by(id=id).first()
+        if not subject:
+            return {"message": "Subject not found"}, 404
         
+        try:
+            db.session.delete(subject)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Subject deleted successfully"}, 204
+    
+    @auth_required('token')
+    def put(self, id):
+        subject = Subject.query.filter_by(id=id).first()
+        if not subject:
+            return {"message": "Subject not found"}, 404
+        
+        data = request.get_json();
+        
+        name = data.get('name');
+        description = data.get('description');
+        
+        if not name or not description:
+            return {"message": "All fields are required"}, 400
+        
+        subject.name = name
+        subject.description = description
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Subject updated successfully"}, 204
+    
+# Chapters API
 class ChapterAPI(Resource):
     @auth_required('token')
     @marshal_with(chapter_fields)
@@ -146,6 +189,7 @@ class ChapterAPI(Resource):
             db.session.rollback();
             return {"message": str(e)}, 500
     
+# Quiz API
 class QuizAPI(Resource):
     @auth_required('token')
     @marshal_with(quiz_fields)

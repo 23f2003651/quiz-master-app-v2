@@ -5,8 +5,10 @@ import store from "./utils/store.js";
 // components
 import Navbar from "./components/Navbar.js";
 import LoginIcon from "./components/LoginIcon.js";
+import Modal from "./components/Modal.js";
 
 Vue.component("LoginIcon", LoginIcon);
+Vue.component("modal-component", Modal);
 
 console.log("app.js loaded");
 
