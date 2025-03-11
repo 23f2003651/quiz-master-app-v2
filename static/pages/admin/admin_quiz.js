@@ -2,7 +2,17 @@
 const admin_quiz = {
   template: `
   <div>
-    This is admin quize page;
+    
+    <div class="admin-quiz-parent-container">
+      <div class="admin-quiz-container">
+        
+        <h1>
+          Quizes
+        </h1>
+
+      </div>
+    </div>
+
   </div>
   `
 }

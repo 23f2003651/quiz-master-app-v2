@@ -188,6 +188,47 @@ class ChapterAPI(Resource):
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
+        
+    @auth_required('token')
+    def delete(self, id):
+        chapter = Chapter.query.filter_by(id=id).first()
+        if not chapter:
+            return {"message": "Chapter not found"}, 404
+        
+        try:
+            db.session.delete(chapter)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Chapter deleted successfully"}, 204
+    
+    @auth_required('token')
+    def put(self, id):
+        chapter = Chapter.query.filter_by(id=id).first()
+        if not chapter:
+            return {"message": "Chapter not found"}, 404
+        
+        data = request.get_json();
+        
+        name = data.get('name');
+        description = data.get('description');
+        
+        if not name or not description:
+            return {"message": "All fields are required"}, 400
+        
+        chapter.name = name
+        chapter.description = description
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Chapter updated successfully"}, 204
+        
     
 # Quiz API
 class QuizAPI(Resource):
