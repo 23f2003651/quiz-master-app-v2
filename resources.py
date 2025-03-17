@@ -12,7 +12,9 @@ user_fields = {
     'id': fields.Integer,
     'username': fields.String,
     'email': fields.String,
-    'qualification': fields.String
+    'qualification': fields.String,
+    'active': fields.Boolean,
+    'attempted': fields.Boolean
 }
 
 chapter_fields = {
@@ -56,6 +58,8 @@ user_parser.add_argument('email', type=str, required=True, help="Email is requir
 user_parser.add_argument('username', type=str, required=True, help="Username is required")
 user_parser.add_argument('password', type=str, required=True, help="Password is required")
 user_parser.add_argument('qualification', type=str, required=True, help="Qualification is required")
+user_parser.add_argument('active', type=bool, required=True, help="Actice is required")
+user_parser.add_argument('attempted', type=bool, required=True, help="Attempted is required")
 
 subject_parser = reqparse.RequestParser()
 subject_parser.add_argument('name', type=str, required=True, help="Name is required")
@@ -348,6 +352,7 @@ class QuizAPI(Resource):
         
         return {"message": "Quiz updated successfully"}, 204
 
+# Questions API
 class QuestionsAPI(Resource):
     @auth_required('token')
     @marshal_with(questions_fields)

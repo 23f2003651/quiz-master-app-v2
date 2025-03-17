@@ -6,9 +6,11 @@ import store from "./utils/store.js";
 import Navbar from "./components/Navbar.js";
 import LoginIcon from "./components/LoginIcon.js";
 import Modal from "./components/Modal.js";
+import CardComponent from "./components/Card.js";
 
 Vue.component("LoginIcon", LoginIcon);
 Vue.component("modal-component", Modal);
+Vue.component("card-component", CardComponent)
 
 console.log("app.js loaded");
 

@@ -34,7 +34,7 @@ const Navbar = {
         ];
         } else {
           return [
-					{ to: `/admin-dashboard`, text: "Dashboard" },
+					{ to: `/admin-dashboard`, text: "Subjects" },
           { to: `/admin-quiz`, text: "Quiz" },
           { to: `/admin-users`, text: "Users" },
           { to: `/admin-summary`, text: "Summary" },
