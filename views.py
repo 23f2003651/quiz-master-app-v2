@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from flask_security import SQLAlchemyUserDatastore
 from flask_security.utils import hash_password, verify_password
 from extensions import db
-from models import Role
+from models import Role, Chapter
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
 
@@ -73,3 +73,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             db.session.rollback()
             return {"message": "Error creating user"}, 500
 
+    @app.route('/api/subjects/<int:subject_id>/chapters')
+    def get_chapters(subject_id):
+        chapters = Chapter.query.filter_by(subject_id=subject_id).all()
+        return jsonify([{"id": c.id, "name": c.name} for c in chapters])

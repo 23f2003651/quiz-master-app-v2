@@ -2,7 +2,7 @@ const Navbar = {
   template: `
   <nav style="height: 60px; background: rgba(0,0,0,0.75) !important; color: white; display: flex; align-items: center; padding: 0 20px;" class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Quizz</a>
+      <a class="navbar-brand" href="/">Quizzy</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -36,6 +36,7 @@ const Navbar = {
           return [
 					{ to: `/admin-dashboard`, text: "Dashboard" },
           { to: `/admin-quiz`, text: "Quiz" },
+          { to: `/admin-users`, text: "Users" },
           { to: `/admin-summary`, text: "Summary" },
         ];
         }

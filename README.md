@@ -17,9 +17,9 @@ This is the AppDev-2 Project on Quiz Master App V2
   - [X] GET & POST for Subjects
   - [X] GET & POST for Chapters
   - [X] GET & POST for Quizes
-- [] UI for Admin Pages
-  - [] Basic admin dashboard
-- [] UI for User Pages
-  - [] Basic user dashboard
-- [ ] Giving functionality to admin pages
-- [ ] Giving functionality to user pages
+- [] Admin pages
+  - [X] Admin managing subjects and chapters
+  - [] Admin managing quizzes
+- [] User pages
+  - [] User able to view all the quizzes
+  - [] User able to attempt the quiz

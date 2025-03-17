@@ -6,6 +6,7 @@ import Login from "../pages/Login.js";
 import admin_quiz from "../pages/admin/admin_quiz.js";
 import admin_dashboard from "../pages/admin/admin_dashboard.js";
 import admin_summary from "../pages/admin/admin_summary.js";
+import admin_users from "../pages/admin/admin_users.js"
 
 // user imports
 import user_scores from "../pages/user/user_scores.js";
@@ -21,6 +22,7 @@ const routes = [
   { path: '/admin-quiz', component: admin_quiz },
   { path: '/admin-dashboard', component: admin_dashboard },
   { path: '/admin-summary', component: admin_summary },
+  { path: '/admin-users', component: admin_users },
 
   // user paths
   { path: '/user-scores', component: user_scores },

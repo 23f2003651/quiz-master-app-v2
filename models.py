@@ -43,11 +43,14 @@ class Chapter(db.Model):
     
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    remarks = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
     duration = db.Column(db.Integer, nullable=False, default=600)
-    start_time = db.Column(DateTime, nullable=True)
+    date_of_quiz = db.Column(DateTime, nullable=True)
     
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)
+    
+    questions = db.relationship("Questions", backref="quiz", lazy=True, cascade="all, delete-orphan")
     
 class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,6 +59,7 @@ class Questions(db.Model):
     opt2 = db.Column(db.String(50), nullable=False)
     opt3 = db.Column(db.String(50), nullable=False)
     opt4 = db.Column(db.String(50), nullable=False)
+    correct_opt = db.Column(db.Integer, nullable=False)
     
     quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
     

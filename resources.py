@@ -29,12 +29,25 @@ subject_fields = {
     'chapters': fields.List(fields.Nested(chapter_fields))
 }
 
+questions_fields = {
+    'id': fields.Integer,
+    'question_statement': fields.String,
+    'opt1': fields.String,
+    'opt2': fields.String,
+    'opt3': fields.String,
+    'opt4': fields.String,
+    'correct_opt': fields.Integer,
+    'quiz_id': fields.Integer
+}
+
 quiz_fields = {
     'id': fields.Integer,
-    'remarks': fields.String,
+    'title': fields.String,
     'duration': fields.Integer,
-    'start_time': fields.DateTime,
-    'chapter_id': fields.Integer
+    'date_of_quiz': fields.DateTime,
+    'subject_id': fields.Integer,
+    'chapter_id': fields.Integer,
+    'questions': fields.List(fields.Nested(questions_fields))
 }
 
 # Request parser
@@ -52,6 +65,15 @@ chapter_parser = reqparse.RequestParser()
 chapter_parser.add_argument('name', type=str, required=True, help="Name is required")
 chapter_parser.add_argument('description', type=str, required=True, help="Description is required")
 chapter_parser.add_argument('subject_id', type=int, required=True, help="Subject ID is required")
+
+question_parser = reqparse.RequestParser()
+question_parser.add_argument('question_statement', type=str, required=True, help="Question Statement is required")
+question_parser.add_argument('opt1', type=str, required=True, help="Option 1 is required")
+question_parser.add_argument('opt2', type=str, required=True, help="Option 2 is required")
+question_parser.add_argument('opt3', type=str, required=True, help="Option 3 is required")
+question_parser.add_argument('opt4', type=str, required=True, help="Option 4 is required")
+question_parser.add_argument('correct_opt', type=int, required=True, help="Correct option is required")
+question_parser.add_argument('quiz_id', type=int, required=True, help="Quiz ID is required")
 
 # Users API
 class UserAPI(Resource):
@@ -228,8 +250,7 @@ class ChapterAPI(Resource):
             return {"message": str(e)}, 500
         
         return {"message": "Chapter updated successfully"}, 204
-        
-    
+  
 # Quiz API
 class QuizAPI(Resource):
     @auth_required('token')
@@ -251,31 +272,180 @@ class QuizAPI(Resource):
         
         data = request.get_json();
         
-        remarks = data.get('remarks');
+        title = data.get('title');
         duration = data.get('duration', 600);
-        start_time = data.get('start_time');
+        date_of_quiz = data.get('date_of_quiz');
         chapter_id = data.get('chapter_id');
+        subject_id = data.get('subject_id');
         
-        if not remarks or not chapter_id:
+        if not title or not chapter_id:
             return {"message": "All fields are required"}, 400
         
-        if start_time:
+        if date_of_quiz:
             try:
-                start_time = datetime.fromisoformat(start_time)
+                date_of_quiz = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")
             except ValueError:
                 return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM:SS"}, 400
         
         try:
-            new_quiz = Quiz(remarks=remarks, duration=duration, start_time=start_time, chapter_id=chapter_id)
+            new_quiz = Quiz(title=title, duration=duration, date_of_quiz=date_of_quiz, chapter_id=chapter_id, subject_id=subject_id)
             db.session.add(new_quiz)
             db.session.commit()
             return {"message": "Quiz created successfully"}, 201
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
+    
+    @auth_required('token')
+    def delete(self, id):
+        quiz = Quiz.query.filter_by(id=id).first()
+        if not quiz:
+            return {"message": "Quiz not found"}, 404
+        
+        try:
+            db.session.delete(quiz)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Quiz deleted successfully"}, 204
+    
+    @auth_required('token')
+    def put(self, id):
+        quiz = Quiz.query.filter_by(id=id).first()
+        if not quiz:
+            return {"message": "Quiz not found"}, 404
+        
+        data = request.get_json();
+        
+        title = data.get('title');
+        duration = data.get('duration', 600);
+        date_of_quiz = data.get('date_of_quiz');
+        subject_id = data.get('subject_id');
+        chapter_id = data.get('chapter_id');
+        
+        if not title or not chapter_id:
+            return {"message": "All fields are required"}, 400
+        
+        if date_of_quiz:
+            try:
+                date_of_quiz = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")
+            except ValueError:
+                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM:SS"}, 400
+        
+        quiz.title = title
+        quiz.duration = duration
+        quiz.date_of_quiz = date_of_quiz
+        quiz.chapter_id = chapter_id
+        quiz.subject_id = subject_id
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Quiz updated successfully"}, 204
+
+class QuestionsAPI(Resource):
+    @auth_required('token')
+    @marshal_with(questions_fields)
+    def get(self, id=None):
+        if id:
+            question = Questions.query.filter_by(id=id).first()
+            if question:
+                return question, 200
+            return {"message": "Question not found"}, 404
+        
+        question = Questions.query.all()
+        if question:
+            return question, 200
+        return {"message": "No question found"}, 404
+    
+    @auth_required('token')
+    def post(self):
+        data = request.get_json()
+        
+        question_statement = data.get('question_statement')
+        opt1 = data.get('opt1')
+        opt2 = data.get('opt2')
+        opt3 = data.get('opt3')
+        opt4 = data.get('opt4')
+        correct_opt = data.get('correct_opt')
+        quiz_id = data.get('quiz_id')
+        
+        if not question_statement or not opt1 or not opt2 or not opt3 or not opt4 or not correct_opt or not quiz_id:
+            return {"message": "All fields are required"}, 400
+        
+        try:
+            new_question = Questions(
+                question_statement=question_statement,
+                opt1=opt1,
+                opt2=opt2,
+                opt3=opt3,
+                opt4=opt4,
+                correct_opt=correct_opt,
+                quiz_id=quiz_id
+            )
+            db.session.add(new_question)
+            db.session.commit()
+            return {"message": "Question created successfully"}, 201
+        except Exception as e:
+            db.session.rollback()
+            return {"message": str(e)}, 500
+        
+    @auth_required('token')
+    def delete(self, id):
+        question = Questions.query.filter_by(id=id).first()
+        if not question:
+            return {"message": "Question not found"}, 404
+        
+        try:
+            db.session.delete(question)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Question deleted successfully"}, 204
+    
+    @auth_required('token')
+    def put(self, id):
+        question = Questions.query.filter_by(id=id).first()
+        if not question:
+            return {"message": "Question not found"}, 404
+        
+        data = request.get_json();
+        
+        question_statement = data.get('question_statement')
+        opt1 = data.get('opt1')
+        opt2 = data.get('opt2')
+        opt3 = data.get('opt3')
+        opt4 = data.get('opt4')
+        correct_opt = data.get('correct_opt')
+        
+        if not question_statement or not opt1 or not opt2 or not opt3 or not opt4 or not correct_opt:
+            return {"message": "All fields are required"}, 400
+        
+        question.question_statement = question_statement
+        question.opt1 = opt1
+        question.opt2 = opt2
+        question.opt3 = opt3
+        question.opt4 = opt4
+        question.correct_opt = correct_opt
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback();
+            return {"message": str(e)}, 500
+        
+        return {"message": "Question updated successfully"}, 204
 
 # api routes
 api.add_resource(UserAPI, '/users/<int:id>', '/users')
 api.add_resource(SubjectAPI, '/subjects/<int:id>', '/subjects')
 api.add_resource(ChapterAPI, '/chapters/<int:id>', '/chapters')
 api.add_resource(QuizAPI, '/quiz/<int:id>', '/quiz')
+api.add_resource(QuestionsAPI, '/questions/<int:id>', '/questions')

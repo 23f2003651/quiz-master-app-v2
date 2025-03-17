@@ -1,6 +1,6 @@
 
 const admin_dashboard = {
-  template: /* html */ `
+  template: `
   <div>
 
     <div class="admin-dashboard-parent-container">
@@ -79,7 +79,7 @@ const admin_dashboard = {
       </template>
 
       <template v-slot:footer>
-        <button class="btn btn-danger" @click="deleteSubject()">Delete</button>
+        <button class="btn btn-danger" @click="deleteSubject()" data-bs-dismiss="modal">Delete</button>
       </template>
     </modal-component>
 
@@ -92,7 +92,7 @@ const admin_dashboard = {
       </template>
 
       <template v-slot:footer>
-        <button class="btn btn-success" @click="addChapter(currSubject)">Add</button>
+        <button class="btn btn-success" @click="addChapter()">Add</button>
       </template>
     </modal-component>
 
@@ -104,7 +104,7 @@ const admin_dashboard = {
       </template>
 
       <template v-slot:footer>
-        <button class="btn btn-success" @click="editChapter()">Save</button>
+        <button class="btn btn-success" @click="editChapter()" data-bs-dismiss="modal">Save</button>
       </template>
     </modal-component>
 
@@ -115,7 +115,7 @@ const admin_dashboard = {
       </template>
 
       <template v-slot:footer>
-        <button class="btn btn-danger" @click="deleteChapter()">Delete</button>
+        <button class="btn btn-danger" @click="deleteChapter()" data-bs-dismiss="modal">Delete</button>
       </template>
     </modal-component>
 
