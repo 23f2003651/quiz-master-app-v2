@@ -1,9 +1,9 @@
-import json
 from flask import render_template, request, jsonify
 from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
 from extensions import db
 from models import Role, Chapter, Questions, Scores
+import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
 
@@ -106,3 +106,27 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             return jsonify({"error": "Error creating new score"}), 400
 
         return jsonify({"message": "Score added"}), 201
+    
+    @app.route('/api/get-scores/<int:id>', methods=["GET"])
+    def get_scores(id):
+
+        scores = Scores.query.filter_by(user_id=id).all()
+
+        if not scores:
+            return jsonify({"message": "No scores found for this user"}), 404
+
+        scores_list = []
+        for score in scores:
+            scores_list.append({
+                "id": score.id,
+                "time_stamp_of_attempt": score.time_stamp_of_attempt,
+                "user_answers": json.loads(score.user_answers),
+                "correct_answers": json.loads(score.correct_answers),
+                "user_id": score.user_id,
+                "chapter_id": score.chapter_id,
+                "subject_id": score.subject_id
+            })
+
+        return jsonify(scores_list), 200
+    
+    
