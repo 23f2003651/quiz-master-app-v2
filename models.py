@@ -68,6 +68,10 @@ class Scores(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     time_stamp_of_attempt = db.Column(DateTime, default=func.now())
     
-    quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
+    user_answers = db.Column(db.Text, nullable=False)
+    correct_answers = db.Column(db.Text, nullable=False)
+    
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)
 

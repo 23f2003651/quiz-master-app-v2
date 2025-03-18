@@ -1,8 +1,9 @@
+import json
 from flask import render_template, request, jsonify
-from flask_security import SQLAlchemyUserDatastore
+from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
 from extensions import db
-from models import Role, Chapter
+from models import Role, Chapter, Questions, Scores
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
 
@@ -77,3 +78,31 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
     def get_chapters(subject_id):
         chapters = Chapter.query.filter_by(subject_id=subject_id).all()
         return jsonify([{"id": c.id, "name": c.name} for c in chapters])
+    
+    @app.route('/api/submit-quiz', methods=["GET", "POST"])
+    def submit_quiz():
+        data = request.get_json();
+        answers = data.get('answers')
+        quiz_id = data.get('quiz_id')
+        chapter_id = data.get('chapter_id')
+        subject_id = data.get('subject_id')        
+        user_id = current_user.id
+        
+        if not chapter_id or not subject_id or not quiz_id:
+            return jsonify({"error": "Invalid request"}), 400
+        
+        questions = Questions.query.filter_by(quiz_id=quiz_id).all()
+        correct_answers = {q.id: q.correct_opt for q in questions}
+        
+        print(answers)
+        
+        try:
+            new_score = Scores(user_answers=json.dumps(answers), correct_answers=json.dumps(correct_answers), user_id=user_id, chapter_id=chapter_id, subject_id=subject_id)
+            db.session.add(new_score)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("Error:", e)
+            return jsonify({"error": "Error creating new score"}), 400
+
+        return jsonify({"message": "Score added"}), 201

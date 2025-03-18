@@ -13,6 +13,7 @@ import user_scores from "../pages/user/user_scores.js";
 import user_dashboard from "../pages/user/user_dashboard.js";
 import user_summary from "../pages/user/user_summary.js";
 import user_register from "../pages/user/user_register.js";
+import quiz_page from "../pages/user/quiz_page.js";
 
 const routes = [
   { path: "/", component: Home },
@@ -28,7 +29,8 @@ const routes = [
   { path: '/user-scores', component: user_scores },
   { path: '/user-dashboard', component: user_dashboard },
   { path: '/user-summary', component: user_summary },
-  { path: '/user-register', component: user_register }
+  { path: '/user-register', component: user_register },
+  { path: '/quiz/:id', component: quiz_page }
 ]
 
 const router = new VueRouter({
