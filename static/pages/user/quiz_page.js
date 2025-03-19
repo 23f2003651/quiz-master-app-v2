@@ -113,7 +113,6 @@ const quiz_page = {
         } else {
           clearInterval(this.timer);
           this.submitQuiz();
-          this.$router.push('/user-scores')
         }
       }, 1000)
     },

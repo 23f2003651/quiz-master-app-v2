@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask_restful import Resource, Api, reqparse, fields, marshal_with
-from flask_security import auth_required
+from flask_security import auth_required, current_user
 from models import User, Subject, Chapter, Quiz, Questions, Scores
 from extensions import db
 from datetime import datetime
@@ -260,12 +260,19 @@ class QuizAPI(Resource):
     @auth_required('token')
     @marshal_with(quiz_fields)
     def get(self, id=None):
+        user_id = current_user.id
+
         if id:
             quiz = Quiz.query.filter_by(id=id).first()
             if quiz:
                 return quiz, 200
             return {"message": "Quiz not found"}, 404
-        
+
+        # Enable these lines when done testing with quizzes
+        # attempted_quiz_ids = db.session.query(Scores.quiz_id).filter(Scores.user_id == user_id).all()
+        # attempted_quiz_ids = [quiz_id for (quiz_id,) in attempted_quiz_ids]
+        # quizzes = Quiz.query.filter(~Quiz.id.in_(attempted_quiz_ids)).all()
+
         quizzes = Quiz.query.all()
         if quizzes:
             return quizzes, 200
@@ -274,13 +281,13 @@ class QuizAPI(Resource):
     @auth_required('token')
     def post(self):
         
-        data = request.get_json();
+        data = request.get_json()
         
-        title = data.get('title');
-        duration = data.get('duration', 600);
-        date_of_quiz = data.get('date_of_quiz');
-        chapter_id = data.get('chapter_id');
-        subject_id = data.get('subject_id');
+        title = data.get('title')
+        duration = data.get('duration', 600)
+        date_of_quiz = data.get('date_of_quiz')
+        chapter_id = data.get('chapter_id')
+        subject_id = data.get('subject_id')
         
         if not title or not chapter_id:
             return {"message": "All fields are required"}, 400
@@ -297,7 +304,7 @@ class QuizAPI(Resource):
             db.session.commit()
             return {"message": "Quiz created successfully"}, 201
         except Exception as e:
-            db.session.rollback();
+            db.session.rollback()
             return {"message": str(e)}, 500
     
     @auth_required('token')
@@ -310,7 +317,7 @@ class QuizAPI(Resource):
             db.session.delete(quiz)
             db.session.commit()
         except Exception as e:
-            db.session.rollback();
+            db.session.rollback()
             return {"message": str(e)}, 500
         
         return {"message": "Quiz deleted successfully"}, 204
@@ -321,13 +328,13 @@ class QuizAPI(Resource):
         if not quiz:
             return {"message": "Quiz not found"}, 404
         
-        data = request.get_json();
+        data = request.get_json()
         
-        title = data.get('title');
-        duration = data.get('duration', 600);
-        date_of_quiz = data.get('date_of_quiz');
-        subject_id = data.get('subject_id');
-        chapter_id = data.get('chapter_id');
+        title = data.get('title')
+        duration = data.get('duration', 600)
+        date_of_quiz = data.get('date_of_quiz')
+        subject_id = data.get('subject_id')
+        chapter_id = data.get('chapter_id')
         
         if not title or not chapter_id:
             return {"message": "All fields are required"}, 400

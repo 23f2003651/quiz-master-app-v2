@@ -10,17 +10,19 @@ const user_scores = {
         <table v-if="scores.length" class="table table-striped table-bordered">
           <thead class="thead-dark">
             <tr>
-              <th scope="col">User ID</th>
+              <th scope="col">S.No</th>
               <th scope="col">Chapter Name</th>
               <th scope="col">Subject Name</th>
+              <th scope="col">Marks</th>
               <th scope="col">Timestamp</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(score, index) in scores" :key="index">
-              <td>{{ score.user_id }}</td>
+              <td>{{ index+1 }}</td>
               <td>{{ getQuizChapterName(score.chapter_id) }}</td>
               <td>{{ getQuizSubjectName(score.subject_id) }}</td>
+              <td>{{ getScore(score.user_answers, score.correct_answers) }}</td>
               <td>{{ formatTimestamp(score.time_stamp_of_attempt) }}</td>
             </tr>
           </tbody>
@@ -44,6 +46,20 @@ const user_scores = {
   },
 
   methods: {
+
+    getScore(user_ans, corr_ans) {
+      let score = 0;
+      const total_marks = Object.keys(corr_ans).length;
+      
+      for (const key in corr_ans) {
+        if (user_ans[key] && user_ans[key] == corr_ans[key]) {
+          score++;
+        }
+      }
+
+      return `${score}/${total_marks}`;
+    },
+
     // Computed property to get subject name
     getQuizSubjectName(subject_id) {
       const subject = this.subjects.find(s => s.id === subject_id);

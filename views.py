@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
 from extensions import db
-from models import Role, Chapter, Questions, Scores
+from models import Role, Chapter, Questions, Scores, Subject, Quiz
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
@@ -97,7 +97,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         print(answers)
         
         try:
-            new_score = Scores(user_answers=json.dumps(answers), correct_answers=json.dumps(correct_answers), user_id=user_id, chapter_id=chapter_id, subject_id=subject_id)
+            new_score = Scores(user_answers=json.dumps(answers), correct_answers=json.dumps(correct_answers), user_id=user_id, chapter_id=chapter_id, subject_id=subject_id, quiz_id=quiz_id)
             db.session.add(new_score)
             db.session.commit()
         except Exception as e:
@@ -129,4 +129,54 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
 
         return jsonify(scores_list), 200
     
+    
+    # Char Data
+    @app.route('/api/chart-data/subjects', methods=["GET"])
+    def subject_data():
+
+        subjects = Subject.query.all()
+        labels = []
+        data = []
+
+        for subject in subjects:
+            labels.append(subject.name)
+            data.append(len(subject.chapters))
+        
+        return jsonify([labels, data])
+    
+    @app.route('/api/chart-data/user-scores', methods=["GET"])
+    def user_scores():
+        
+        def get_score(user_ans, corr_ans):
+            score = 0
+            total_marks = len(corr_ans)
+            
+            for key in corr_ans:
+                if (user_ans[key] and int(user_ans[key]) == int(corr_ans[key])):
+                    score += 1
+            
+            return (score/total_marks)*100
+        
+        user_id = current_user.id
+        
+        scores = Scores.query.filter_by(user_id=user_id).all()
+        
+        labels = []
+        data = []
+        
+        for score in scores:
+            user_answers = json.loads(score.user_answers)
+            correct_answers = json.loads(score.correct_answers)
+            
+            quiz = Quiz.query.filter_by(id=score.quiz_id).first()
+            
+            print(type(user_answers))
+            
+            labels.append(quiz.title)
+            data.append(get_score(user_answers, correct_answers))
+            
+        print(labels)
+        print(data)
+            
+        return jsonify([labels, data])
     
