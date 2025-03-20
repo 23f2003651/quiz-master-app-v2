@@ -378,7 +378,7 @@ const admin_dashboard = {
           } catch (error) {
             console.error("Error while checking task");
           }
-        }, 1000);
+        }, 100);
         
       } catch (error) {
         console.error("Error starting task");
