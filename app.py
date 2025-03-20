@@ -1,9 +1,11 @@
 from flask import Flask
-from extensions import db, security, cache  # Import cache from extensions
+from extensions import db, security, cache
 from create_initial_data import create_data
 import views
-import resources  # Don't import `cache` from app.py
+import resources
 from flask_caching import Cache
+from celery_dir.celery_factory import celery_init_app
+import flask_excel as excel
 
 def create_app():
     app = Flask(__name__)
@@ -20,8 +22,9 @@ def create_app():
     app.config['CACHE_REDIS_DB'] = 0
 
     # Initialize extensions
-    cache.init_app(app)  # Properly initialize cache here
+    cache.init_app(app)
     db.init_app(app)
+    excel.init_excel(app)
 
     with app.app_context():
         from models import User, Role
@@ -43,6 +46,10 @@ def create_app():
 
     return app
 
+app = create_app()
+celery_app = celery_init_app(app)
+
+celery_app.conf.update(app.config)
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True, port=5500)

@@ -1,9 +1,11 @@
-from flask import render_template, request, jsonify, current_app as app
+from flask import render_template, request, jsonify, current_app as app, send_file
 from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
 from extensions import db, cache
 from models import Role, Chapter, Questions, Scores, Subject, Quiz
 from datetime import datetime
+from celery_dir.tasks import add, create_csv
+from celery.result import AsyncResult
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
@@ -12,6 +14,34 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
     @cache.cached(timeout = 5)
     def cached_time():
         return {'time': (datetime.now())}
+    
+    @app.get('/celery')
+    def celery_test():
+        task = add.delay(10, 20)
+        return {'task_id': task.id}
+    
+    @app.get('/get-celery-data/<id>')
+    def getData(id):
+        result = AsyncResult(id)
+        
+        if result.ready():
+            return {'result': result.result}, 200
+        else:
+            return {'message': 'task not ready'}, 405
+        
+    @app.get('/create-csv')
+    def createCSV():
+        task = create_csv.delay()
+        return {'task_id': task.id}
+    
+    @app.get('/get-csv/<task_id>')
+    def getCSV(task_id):
+        result = AsyncResult(task_id)
+        
+        if result.ready():
+            return send_file(f'./celery_dir/user_downloads/{result.result}')
+        else:
+            return {'message': 'task not ready'}, 405
 
     @app.route('/')
     def home():
