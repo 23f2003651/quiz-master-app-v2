@@ -32,6 +32,8 @@ const user_summary = {
   },
 
   methods: {
+
+    // Get scores chart data .get() (views.py)
     async subjectsData() {
       const url = window.location.origin;
 

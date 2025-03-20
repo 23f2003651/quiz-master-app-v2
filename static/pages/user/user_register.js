@@ -45,6 +45,8 @@ const user_login = {
 	},
 
 	methods: {
+
+		// Register a user .post()
 		async registerUser() {
 			try {
 				const url = window.location.origin;

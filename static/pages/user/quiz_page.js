@@ -73,6 +73,7 @@ const quiz_page = {
       this.currentQuestionIndex--;
     },
 
+    // Get selected quiz .get()
     async getQuizz() {
       const url = window.location.origin;
 
@@ -117,6 +118,7 @@ const quiz_page = {
       }, 1000)
     },
 
+    // Submit a quiz .post()
     async submitQuiz() {
       clearInterval(this.timer);
       console.log("Submitted Answers:", this.answers);

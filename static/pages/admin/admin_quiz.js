@@ -241,6 +241,7 @@ const admin_quiz = {
       this.editCorrectOption = question.correct_opt;
     },
 
+    // Get all quizzes .get()
     async getQuizzes() {
       const url = window.location.origin;
 
@@ -261,6 +262,7 @@ const admin_quiz = {
       }
     },
 
+    // Get all subjects .get()
     async getSubjects() {
       const url = window.location.origin;
 
@@ -281,6 +283,7 @@ const admin_quiz = {
       }
     },
 
+    // Get selected chapters .get()
     async fetchChapters() {
       const url = window.location.origin;
 
@@ -433,6 +436,7 @@ const admin_quiz = {
       }
     },
 
+    // Edit a question .put()
     async editQuestion() {
       const url = window.location.origin;
 
@@ -463,6 +467,7 @@ const admin_quiz = {
       }
     },
 
+    // Delete a question .delete()
     async deleteQuestion() {
       const url = window.location.origin;
 

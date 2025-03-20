@@ -77,6 +77,7 @@ const user_scores = {
       return new Date(timestamp).toLocaleString(); 
     },
 
+    // Get selected scores .get() (views.py)
     async getScores() {
       const url = window.location.origin;
       const user_id = +sessionStorage.getItem('id');

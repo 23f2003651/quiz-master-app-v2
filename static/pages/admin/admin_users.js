@@ -29,6 +29,8 @@ const admin_users = {
   },
 
   methods: {
+
+    // Get all users .get()
     async getUsers() {
       const url = window.location.origin;
 

@@ -1,11 +1,17 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, current_app as app
 from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
-from extensions import db
+from extensions import db, cache
 from models import Role, Chapter, Questions, Scores, Subject, Quiz
+from datetime import datetime
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
+
+    @app.get('/cache')
+    @cache.cached(timeout = 5)
+    def cached_time():
+        return {'time': (datetime.now())}
 
     @app.route('/')
     def home():
@@ -67,6 +73,9 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
                 )
             
             db.session.commit()
+            
+            cache.delete("users_key")
+            
             return {"message": "User created successfully"}, 200
         
         except Exception as e:
@@ -75,6 +84,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             return {"message": "Error creating user"}, 500
 
     @app.route('/api/subjects/<int:subject_id>/chapters')
+    @cache.memoize(timeout=5)
     def get_chapters(subject_id):
         chapters = Chapter.query.filter_by(subject_id=subject_id).all()
         return jsonify([{"id": c.id, "name": c.name} for c in chapters])
@@ -108,6 +118,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         return jsonify({"message": "Score added"}), 201
     
     @app.route('/api/get-scores/<int:id>', methods=["GET"])
+    @cache.memoize(timeout=5)
     def get_scores(id):
 
         scores = Scores.query.filter_by(user_id=id).all()
@@ -128,10 +139,10 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             })
 
         return jsonify(scores_list), 200
-    
-    
+       
     # Char Data
     @app.route('/api/chart-data/subjects', methods=["GET"])
+    @cache.memoize(timeout=5)
     def subject_data():
 
         subjects = Subject.query.all()
@@ -145,6 +156,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         return jsonify([labels, data])
     
     @app.route('/api/chart-data/user-scores', methods=["GET"])
+    @cache.memoize(timeout=5)
     def user_scores():
         
         def get_score(user_ans, corr_ans):
@@ -179,4 +191,5 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         print(data)
             
         return jsonify([labels, data])
+    
     

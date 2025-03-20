@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_restful import Resource, Api, reqparse, fields, marshal_with
 from flask_security import auth_required, current_user
 from models import User, Subject, Chapter, Quiz, Questions, Scores
-from extensions import db
+from extensions import db, cache
 from datetime import datetime
 
 api = Api(prefix='/api')
@@ -82,34 +82,44 @@ question_parser.add_argument('quiz_id', type=int, required=True, help="Quiz ID i
 # Users API
 class UserAPI(Resource):
     @auth_required('token')
+    @cache.cached(timeout=5, key_prefix="users_key")
     @marshal_with(user_fields)
     def get(self, id=None):
         if id:
-            user = User.query.filter_by(id=id).first()
-            if user:
-                return user, 200
-            return {"message": "User not found"}, 404
+            return self.get_user(id)
         
         users = User.query.all()
         if users:
             return users, 200
         return {"message": "No users found"}, 404
-        
+    
+    @cache.memoize(timeout=5)
+    def get_user(self, id):
+        user = User.query.filter_by(id=id).first()
+        if user:
+            return user, 200
+        return {"message": "User not found"}, 404    
+    
 # Subjects API
 class SubjectAPI(Resource):
     @auth_required('token')
+    @cache.cached(timeout=5, key_prefix="subjects_key")
     @marshal_with(subject_fields)
     def get(self, id=None):
         if id:
-            subject = Subject.query.filter_by(id=id).first()
-            if subject:
-                return subject, 200
-            return {"message": "Subject not found"}, 404
+            return self.get_subject(id)
         
         subjects = Subject.query.all()
         if subjects:
             return subjects, 200
         return {"message": "No subjects found"}, 404
+    
+    @cache.memoize(timeout=5)
+    def get_subject(self, id):
+        subject = Subject.query.filter_by(id=id).first()
+        if subject:
+            return subject, 200
+        return {"message": "Subject not found"}, 404
     
     @auth_required('token')
     def post(self, id=None):
@@ -130,6 +140,9 @@ class SubjectAPI(Resource):
             new_subject = Subject(name=name, description=description)
             db.session.add(new_subject)
             db.session.commit()
+            
+            cache.delete("subjects_key")
+            
             return {"message": "Subject created successfully"}, 201
         except Exception as e:
             db.session.rollback();
@@ -144,6 +157,9 @@ class SubjectAPI(Resource):
         try:
             db.session.delete(subject)
             db.session.commit()
+            
+            cache.delete("subjects_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -169,6 +185,9 @@ class SubjectAPI(Resource):
         
         try:
             db.session.commit()
+            
+            cache.delete("subjects_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -178,18 +197,23 @@ class SubjectAPI(Resource):
 # Chapters API
 class ChapterAPI(Resource):
     @auth_required('token')
+    @cache.cached(timeout=5, key_prefix="chapters_key")
     @marshal_with(chapter_fields)
     def get(self, id=None):
         if id:
-            chapter = Chapter.query.filter_by(id=id).first()
-            if chapter:
-                return chapter, 200
-            return {"message": "Chapter not found"}, 404
+            return self.get_chapter(id)
         
         chapters = Chapter.query.all()
         if chapters:
             return chapters, 200
         return {"message": "No chapters found"}, 404
+    
+    @cache.memoize(timeout=5)
+    def get_chapter(self, id):
+        chapter = Chapter.query.filter_by(id=id).first()
+        if chapter:
+            return chapter, 200
+        return {"message": "Chapter not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -210,6 +234,9 @@ class ChapterAPI(Resource):
             new_chapter = Chapter(name=name, description=description, subject_id=subject_id)
             db.session.add(new_chapter)
             db.session.commit()
+            
+            cache.delete("chapters_key")
+            
             return {"message": "Chapter created successfully"}, 201
         except Exception as e:
             db.session.rollback();
@@ -224,6 +251,9 @@ class ChapterAPI(Resource):
         try:
             db.session.delete(chapter)
             db.session.commit()
+            
+            cache.delete("chapters_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -249,6 +279,9 @@ class ChapterAPI(Resource):
         
         try:
             db.session.commit()
+            
+            cache.delete("chapters_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -258,15 +291,13 @@ class ChapterAPI(Resource):
 # Quiz API
 class QuizAPI(Resource):
     @auth_required('token')
+    @cache.cached(timeout=5, key_prefix="quizzes_key")
     @marshal_with(quiz_fields)
     def get(self, id=None):
         user_id = current_user.id
 
         if id:
-            quiz = Quiz.query.filter_by(id=id).first()
-            if quiz:
-                return quiz, 200
-            return {"message": "Quiz not found"}, 404
+            return self.get_quiz(id)
 
         # Enable these lines when done testing with quizzes
         # attempted_quiz_ids = db.session.query(Scores.quiz_id).filter(Scores.user_id == user_id).all()
@@ -277,6 +308,13 @@ class QuizAPI(Resource):
         if quizzes:
             return quizzes, 200
         return {"message": "No quizzes found"}, 404
+    
+    @cache.memoize(timeout=5)
+    def get_quiz(self, id):
+        quiz = Quiz.query.filter_by(id=id).first()
+        if quiz:
+            return quiz, 200
+        return {"message": "Quiz not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -302,6 +340,9 @@ class QuizAPI(Resource):
             new_quiz = Quiz(title=title, duration=duration, date_of_quiz=date_of_quiz, chapter_id=chapter_id, subject_id=subject_id)
             db.session.add(new_quiz)
             db.session.commit()
+            
+            cache.delete("quizzes_key")
+            
             return {"message": "Quiz created successfully"}, 201
         except Exception as e:
             db.session.rollback()
@@ -316,6 +357,9 @@ class QuizAPI(Resource):
         try:
             db.session.delete(quiz)
             db.session.commit()
+            
+            cache.delete("quizzes_key")
+            
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
@@ -353,6 +397,9 @@ class QuizAPI(Resource):
         
         try:
             db.session.commit()
+            
+            cache.delete("quizzes_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -362,18 +409,23 @@ class QuizAPI(Resource):
 # Questions API
 class QuestionsAPI(Resource):
     @auth_required('token')
+    @cache.cached(timeout=5, key_prefix="questions_key")
     @marshal_with(questions_fields)
     def get(self, id=None):
         if id:
-            question = Questions.query.filter_by(id=id).first()
-            if question:
-                return question, 200
-            return {"message": "Question not found"}, 404
+            return self.get_question(id)
         
         question = Questions.query.all()
         if question:
             return question, 200
         return {"message": "No question found"}, 404
+    
+    @cache.memoize(timeout=5)
+    def get_question(self, id):
+        question = Questions.query.filter_by(id=id).first()
+        if question:
+            return question, 200
+        return {"message": "Question not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -402,6 +454,9 @@ class QuestionsAPI(Resource):
             )
             db.session.add(new_question)
             db.session.commit()
+            
+            cache.delete("questions_key")
+            
             return {"message": "Question created successfully"}, 201
         except Exception as e:
             db.session.rollback()
@@ -416,6 +471,9 @@ class QuestionsAPI(Resource):
         try:
             db.session.delete(question)
             db.session.commit()
+            
+            cache.delete("questions_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
@@ -449,6 +507,9 @@ class QuestionsAPI(Resource):
         
         try:
             db.session.commit()
+            
+            cache.delete("questions_key")
+            
         except Exception as e:
             db.session.rollback();
             return {"message": str(e)}, 500
