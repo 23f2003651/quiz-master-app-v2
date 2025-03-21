@@ -5,7 +5,7 @@ const user_dashboard = {
     <div class="container py-5">
       <div class="main-container row g-4 justify-content-space-between">
               
-        <card-component v-for="quiz in quizzes" :key="quiz.id" :title="getQuizSubjectName(quiz.subject_id)">
+        <card-component v-for="quiz in quizzes" :key="quiz.id" v-if="quiz.questions.length!=0" :title="getQuizSubjectName(quiz.subject_id)">
           <template v-slot:body>
             <div class="quiz-details"><strong>Chapter:</strong> {{getQuizChapterName(quiz.chapter_id)}}</div>
             <div class="quiz-details"><strong>Questions:</strong> {{quiz.questions.length}} </div>

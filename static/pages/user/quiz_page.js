@@ -56,7 +56,7 @@ const quiz_page = {
 
   computed: {
     currentQuestion() {
-      return this.quiz.questions[this.currentQuestionIndex];
+      return this.quiz.questions[this.currentQuestionIndex]
     }
   },
 
@@ -73,7 +73,6 @@ const quiz_page = {
       this.currentQuestionIndex--;
     },
 
-    // Get selected quiz .get()
     async getQuizz() {
       const url = window.location.origin;
 
@@ -88,8 +87,8 @@ const quiz_page = {
         if (res.status == 200) {
           console.log("Quiz retrieved");
 
-          this.chapter_id = res.chapter_id;
-          this.subject_id = res.subject_id;
+          this.chapter_id = res.data.chapter_id;
+          this.subject_id = res.data.subject_id;
 
           this.quiz = res.data;
           this.timeRemaining = this.quiz.duration;
@@ -118,7 +117,6 @@ const quiz_page = {
       }, 1000)
     },
 
-    // Submit a quiz .post()
     async submitQuiz() {
       clearInterval(this.timer);
       console.log("Submitted Answers:", this.answers);

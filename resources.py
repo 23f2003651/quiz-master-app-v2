@@ -47,8 +47,8 @@ quiz_fields = {
     'title': fields.String,
     'duration': fields.Integer,
     'date_of_quiz': fields.DateTime,
-    'subject_id': fields.Integer,
     'chapter_id': fields.Integer,
+    'subject_id': fields.Integer,
     'questions': fields.List(fields.Nested(questions_fields))
 }
 
@@ -105,21 +105,12 @@ class SubjectAPI(Resource):
     @auth_required('token')
     @cache.cached(timeout=5, key_prefix="subjects_key")
     @marshal_with(subject_fields)
-    def get(self, id=None):
-        if id:
-            return self.get_subject(id)
+    def get(self):
         
         subjects = Subject.query.all()
         if subjects:
             return subjects, 200
         return {"message": "No subjects found"}, 404
-    
-    @cache.memoize(timeout=5)
-    def get_subject(self, id):
-        subject = Subject.query.filter_by(id=id).first()
-        if subject:
-            return subject, 200
-        return {"message": "Subject not found"}, 404
     
     @auth_required('token')
     def post(self, id=None):
@@ -199,21 +190,12 @@ class ChapterAPI(Resource):
     @auth_required('token')
     @cache.cached(timeout=5, key_prefix="chapters_key")
     @marshal_with(chapter_fields)
-    def get(self, id=None):
-        if id:
-            return self.get_chapter(id)
+    def get(self):
         
         chapters = Chapter.query.all()
         if chapters:
             return chapters, 200
         return {"message": "No chapters found"}, 404
-    
-    @cache.memoize(timeout=5)
-    def get_chapter(self, id):
-        chapter = Chapter.query.filter_by(id=id).first()
-        if chapter:
-            return chapter, 200
-        return {"message": "Chapter not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -236,6 +218,7 @@ class ChapterAPI(Resource):
             db.session.commit()
             
             cache.delete("chapters_key")
+            cache.delete("subjects_key")
             
             return {"message": "Chapter created successfully"}, 201
         except Exception as e:
@@ -253,6 +236,7 @@ class ChapterAPI(Resource):
             db.session.commit()
             
             cache.delete("chapters_key")
+            cache.delete("subjects_key")
             
         except Exception as e:
             db.session.rollback();
@@ -281,6 +265,7 @@ class ChapterAPI(Resource):
             db.session.commit()
             
             cache.delete("chapters_key")
+            cache.delete("subjects_key")
             
         except Exception as e:
             db.session.rollback();
@@ -291,13 +276,16 @@ class ChapterAPI(Resource):
 # Quiz API
 class QuizAPI(Resource):
     @auth_required('token')
-    @cache.cached(timeout=5, key_prefix="quizzes_key")
+    @cache.memoize(timeout=5)
     @marshal_with(quiz_fields)
     def get(self, id=None):
         user_id = current_user.id
 
         if id:
-            return self.get_quiz(id)
+            quiz = Quiz.query.filter_by(id=id).first()
+            if quiz:
+                return quiz, 200
+            return {"message": "Quiz not found"}, 404
 
         # Enable these lines when done testing with quizzes
         # attempted_quiz_ids = db.session.query(Scores.quiz_id).filter(Scores.user_id == user_id).all()
@@ -308,13 +296,6 @@ class QuizAPI(Resource):
         if quizzes:
             return quizzes, 200
         return {"message": "No quizzes found"}, 404
-    
-    @cache.memoize(timeout=5)
-    def get_quiz(self, id):
-        quiz = Quiz.query.filter_by(id=id).first()
-        if quiz:
-            return quiz, 200
-        return {"message": "Quiz not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -341,7 +322,7 @@ class QuizAPI(Resource):
             db.session.add(new_quiz)
             db.session.commit()
             
-            cache.delete("quizzes_key")
+            cache.delete_memoized(self.get)
             
             return {"message": "Quiz created successfully"}, 201
         except Exception as e:
@@ -358,7 +339,7 @@ class QuizAPI(Resource):
             db.session.delete(quiz)
             db.session.commit()
             
-            cache.delete("quizzes_key")
+            cache.delete_memoized(self.get)
             
         except Exception as e:
             db.session.rollback()
@@ -398,7 +379,7 @@ class QuizAPI(Resource):
         try:
             db.session.commit()
             
-            cache.delete("quizzes_key")
+            cache.delete_memoized(self.get)
             
         except Exception as e:
             db.session.rollback();
@@ -411,21 +392,12 @@ class QuestionsAPI(Resource):
     @auth_required('token')
     @cache.cached(timeout=5, key_prefix="questions_key")
     @marshal_with(questions_fields)
-    def get(self, id=None):
-        if id:
-            return self.get_question(id)
+    def get(self):
         
         question = Questions.query.all()
         if question:
             return question, 200
         return {"message": "No question found"}, 404
-    
-    @cache.memoize(timeout=5)
-    def get_question(self, id):
-        question = Questions.query.filter_by(id=id).first()
-        if question:
-            return question, 200
-        return {"message": "Question not found"}, 404
     
     @auth_required('token')
     def post(self):
@@ -456,6 +428,7 @@ class QuestionsAPI(Resource):
             db.session.commit()
             
             cache.delete("questions_key")
+            cache.delete_memoized(QuizAPI.get, QuizAPI)
             
             return {"message": "Question created successfully"}, 201
         except Exception as e:
@@ -473,6 +446,7 @@ class QuestionsAPI(Resource):
             db.session.commit()
             
             cache.delete("questions_key")
+            cache.delete_memoized(QuizAPI.get, QuizAPI)
             
         except Exception as e:
             db.session.rollback();
@@ -509,6 +483,7 @@ class QuestionsAPI(Resource):
             db.session.commit()
             
             cache.delete("questions_key")
+            cache.delete_memoized(QuizAPI.get, QuizAPI)
             
         except Exception as e:
             db.session.rollback();

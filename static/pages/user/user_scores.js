@@ -15,6 +15,7 @@ const user_scores = {
               <th scope="col">Subject Name</th>
               <th scope="col">Marks</th>
               <th scope="col">Timestamp</th>
+              <th scope="col">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -24,7 +25,8 @@ const user_scores = {
               <td>{{ getQuizSubjectName(score.subject_id) }}</td>
               <td>{{ getScore(score.user_answers, score.correct_answers) }}</td>
               <td>{{ formatTimestamp(score.time_stamp_of_attempt) }}</td>
-            </tr>
+              <td><a type="button" data-bs-toggle="modal" data-bs-target="#viewScoreDetails" @click="viewDetails"><i class="bi bi-eye-fill"></i></a></td>
+            </tr">
           </tbody>
         </table>
 
@@ -140,6 +142,10 @@ const user_scores = {
         console.error(error);
       }
     },
+
+    viewDetails() {
+      console.log("View score details")
+    }
   },
 
   mounted() {
