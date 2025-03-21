@@ -37,7 +37,6 @@ def create_app():
         create_data(user_datastore)
 
     views.create_view(app, user_datastore)
-    
     resources.api.init_app(app)
 
     app.config["WTF_CSRF_CHECK_DEFAULT"] = False
@@ -48,8 +47,10 @@ def create_app():
 
 app = create_app()
 celery_app = celery_init_app(app)
-
 celery_app.conf.update(app.config)
+
+with app.app_context():
+    import celery_dir.celery_schedule
 
 if __name__ == "__main__":
     app.run(debug=True, port=5500)

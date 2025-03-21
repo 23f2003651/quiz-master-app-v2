@@ -2,6 +2,7 @@ from celery import shared_task
 import time
 import flask_excel
 from models import Subject
+from celery_dir.mail_service import send_email
 
 @shared_task(ignore_result=False)
 def add(x, y):
@@ -23,3 +24,10 @@ def create_csv(self):
         file.write(csv_out.data)
         
     return file_name
+
+@shared_task(ignore_result=True)
+def email_reminder(to, subject, content):
+    send_email(to, subject, content)
+    
+    
+    
