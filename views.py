@@ -165,7 +165,8 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
                 "correct_answers": json.loads(score.correct_answers),
                 "user_id": score.user_id,
                 "chapter_id": score.chapter_id,
-                "subject_id": score.subject_id
+                "subject_id": score.subject_id,
+                "quiz_id": score.quiz_id
             })
 
         return jsonify(scores_list), 200
