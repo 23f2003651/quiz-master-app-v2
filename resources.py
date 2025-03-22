@@ -3,7 +3,8 @@ from flask_restful import Resource, Api, reqparse, fields, marshal_with
 from flask_security import auth_required, current_user
 from models import User, Subject, Chapter, Quiz, Questions, Scores
 from extensions import db, cache
-from datetime import datetime
+from datetime import datetime, timezone
+import pytz
 
 api = Api(prefix='/api')
 
@@ -82,23 +83,19 @@ question_parser.add_argument('quiz_id', type=int, required=True, help="Quiz ID i
 # Users API
 class UserAPI(Resource):
     @auth_required('token')
-    @cache.cached(timeout=5, key_prefix="users_key")
+    @cache.memoize(timeout=5)
     @marshal_with(user_fields)
     def get(self, id=None):
         if id:
-            return self.get_user(id)
+            user = User.query.filter_by(id=id).first()
+            if user:
+                return user, 200
+            return {"message": "User not found"}, 404 
         
         users = User.query.all()
         if users:
             return users, 200
         return {"message": "No users found"}, 404
-    
-    @cache.memoize(timeout=5)
-    def get_user(self, id):
-        user = User.query.filter_by(id=id).first()
-        if user:
-            return user, 200
-        return {"message": "User not found"}, 404    
     
 # Subjects API
 class SubjectAPI(Resource):
@@ -280,6 +277,8 @@ class QuizAPI(Resource):
     @marshal_with(quiz_fields)
     def get(self, id=None):
         user_id = current_user.id
+        user_role = current_user.roles[0].name
+        print(user_role)
 
         if id:
             quiz = Quiz.query.filter_by(id=id).first()
@@ -287,44 +286,59 @@ class QuizAPI(Resource):
                 return quiz, 200
             return {"message": "Quiz not found"}, 404
 
-        # Enable these lines when done testing with quizzes
-        # attempted_quiz_ids = db.session.query(Scores.quiz_id).filter(Scores.user_id == user_id).all()
-        # attempted_quiz_ids = [quiz_id for (quiz_id,) in attempted_quiz_ids]
-        # quizzes = Quiz.query.filter(~Quiz.id.in_(attempted_quiz_ids)).all()
+        if user_role == "admin":
+            quizzes = Quiz.query.all()
+            
+        else:
+            attempted_quiz_ids = db.session.query(Scores.quiz_id).filter(Scores.user_id == user_id).all()
+            attempted_quiz_ids = [quiz_id for (quiz_id,) in attempted_quiz_ids]
+            quizzes = Quiz.query.filter(~Quiz.id.in_(attempted_quiz_ids), Quiz.date_of_quiz > datetime.now(timezone.utc)).all()
 
-        quizzes = Quiz.query.all()
         if quizzes:
             return quizzes, 200
         return {"message": "No quizzes found"}, 404
     
     @auth_required('token')
     def post(self):
-        
         data = request.get_json()
-        
+
         title = data.get('title')
         duration = data.get('duration', 600)
         date_of_quiz = data.get('date_of_quiz')
         chapter_id = data.get('chapter_id')
         subject_id = data.get('subject_id')
-        
+
         if not title or not chapter_id:
             return {"message": "All fields are required"}, 400
-        
+
         if date_of_quiz:
             try:
-                date_of_quiz = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")
+                ist = pytz.timezone('Asia/Kolkata')
+                utc = pytz.utc
+                
+                date_of_quiz_ist = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")  
+                
+                date_of_quiz_utc = ist.localize(date_of_quiz_ist).astimezone(utc)
+            
             except ValueError:
-                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM:SS"}, 400
-        
+                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM"}, 400
+
         try:
-            new_quiz = Quiz(title=title, duration=duration, date_of_quiz=date_of_quiz, chapter_id=chapter_id, subject_id=subject_id)
+            new_quiz = Quiz(
+                title=title,
+                duration=duration,
+                date_of_quiz=date_of_quiz_utc,
+                chapter_id=chapter_id,
+                subject_id=subject_id
+            )
+            
             db.session.add(new_quiz)
             db.session.commit()
             
             cache.delete_memoized(self.get)
-            
+
             return {"message": "Quiz created successfully"}, 201
+
         except Exception as e:
             db.session.rollback()
             return {"message": str(e)}, 500
@@ -352,40 +366,44 @@ class QuizAPI(Resource):
         quiz = Quiz.query.filter_by(id=id).first()
         if not quiz:
             return {"message": "Quiz not found"}, 404
-        
+
         data = request.get_json()
-        
+
         title = data.get('title')
         duration = data.get('duration', 600)
         date_of_quiz = data.get('date_of_quiz')
         subject_id = data.get('subject_id')
         chapter_id = data.get('chapter_id')
-        
+
         if not title or not chapter_id:
             return {"message": "All fields are required"}, 400
-        
+
         if date_of_quiz:
             try:
-                date_of_quiz = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")
+                ist = pytz.timezone('Asia/Kolkata')
+                utc = pytz.utc
+
+                date_of_quiz_ist = datetime.strptime(date_of_quiz, "%Y-%m-%dT%H:%M")
+                date_of_quiz_utc = ist.localize(date_of_quiz_ist).astimezone(utc)
             except ValueError:
-                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM:SS"}, 400
-        
+                return {"message": "Invalid date format. Use YYYY-MM-DDTHH:MM"}, 400
+
+            quiz.date_of_quiz = date_of_quiz_utc
+
         quiz.title = title
         quiz.duration = duration
-        quiz.date_of_quiz = date_of_quiz
         quiz.chapter_id = chapter_id
         quiz.subject_id = subject_id
-        
+
         try:
             db.session.commit()
-            
             cache.delete_memoized(self.get)
-            
+            return {"message": "Quiz updated successfully"}, 200  # Changed 204 to 200 to return a message
+
         except Exception as e:
-            db.session.rollback();
+            db.session.rollback()
             return {"message": str(e)}, 500
-        
-        return {"message": "Quiz updated successfully"}, 204
+
 
 # Questions API
 class QuestionsAPI(Resource):

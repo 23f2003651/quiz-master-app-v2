@@ -11,21 +11,21 @@ const user_scores = {
           <thead class="table-dark">
             <tr>
               <th scope="col">S.No</th>
-              <th scope="col">Chapter Name</th>
               <th scope="col">Subject Name</th>
+              <th scope="col">Chapter Name</th>
               <th scope="col">Marks</th>
-              <th scope="col">Timestamp</th>
+              <th scope="col">Submitted At</th>
               <th scope="col">Details</th>
             </tr>
           </thead>
           <tbody class="table-group-divider">
             <tr v-for="(score, index) in scores" :key="index">
               <td>{{ index+1 }}</td>
-              <td>{{ getQuizChapterName(score.chapter_id) }}</td>
               <td>{{ getQuizSubjectName(score.subject_id) }}</td>
+              <td>{{ getQuizChapterName(score.chapter_id) }}</td>
               
               <td>
-                <span :class="{
+                <span style="font-size: 15px" :class="{
                   'badge bg-success': getScore(score.user_answers, score.correct_answers).percentage >= 50,
                   'badge bg-danger': getScore(score.user_answers, score.correct_answers).percentage < 50
                 }">
@@ -161,7 +161,7 @@ const user_scores = {
       }
 
       return {
-        text: `${score}/${total_marks}`,
+        text: `${score} / ${total_marks}`,
         percentage: (score / total_marks) * 100
       };
     },

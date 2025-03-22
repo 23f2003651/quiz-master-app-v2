@@ -6,6 +6,7 @@ from models import Role, Chapter, Questions, Scores, Subject, Quiz
 from datetime import datetime
 from celery_dir.tasks import add, create_csv
 from celery.result import AsyncResult
+from resources import UserAPI
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
@@ -104,7 +105,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             
             db.session.commit()
             
-            cache.delete("users_key")
+            cache.delete_memoized(UserAPI.get, UserAPI)
             
             return {"message": "User created successfully"}, 200
         

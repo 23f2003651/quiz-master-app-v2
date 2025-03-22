@@ -46,7 +46,7 @@ class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     duration = db.Column(db.Integer, nullable=False, default=600)
-    date_of_quiz = db.Column(DateTime, nullable=True)
+    date_of_quiz = db.Column(DateTime(timezone=True), nullable=True)
     
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)

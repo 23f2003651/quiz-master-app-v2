@@ -332,7 +332,7 @@ const admin_quiz = {
           this.selectedSubject = '';
           this.selectedChapter = '';
           
-          this.$store.commit('setAlert', { message: "Subject created", type: "alert-success" });
+          this.$store.commit('setAlert', { message: "Quiz created", type: "alert-success" });
           this.getQuizzes();
         }
 
