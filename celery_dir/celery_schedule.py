@@ -12,7 +12,7 @@ celery_app = app.extensions['celery']
 def setup_periodic_tasks(sender: Celery, **kwargs):
     
     # Daily quiz reminder
-    sender.add_periodic_task(crontab(hour=12, minute=40), daily_quiz_reminder.s())
+    sender.add_periodic_task(crontab(hour=17, minute=52), daily_quiz_reminder.s())
 
     # Monthly report
-    sender.add_periodic_task(crontab(hour=15, minute=11), send_monthly_report.s())
+    sender.add_periodic_task(crontab(hour=17, minute=53), send_monthly_report.s())
