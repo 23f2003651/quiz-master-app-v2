@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Quizzes Reminder</title>
+    <link rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h2 class="card-title">Hello, <strong>{{ email }} 👋</strong></h2>
+                <p class="card-text">You have pending quizzes waiting for you. Don't miss out!</p>
+
+                {% if quizzes %}
+                    <ul class="list-group">
+                        {% for quiz in quizzes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ quiz.title }}</strong><br>
+                                    <small class="text-muted">
+                                        📅 {{ quiz.date_of_quiz.strftime('%d %b, %Y %I:%M %p') }} |
+                                        ⏳ {{ quiz.duration }} seconds
+                                    </small>
+                                </div>
+                                <a href="http://127.0.0.1:5500/#/user-dashboard" 
+                                   class="btn btn-sm btn-primary fw-bold">Attempt Now</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="alert alert-success mt-3">🎉 Great job! No pending quizzes.</div>
+                {% endif %}
+
+                <p class="text-muted text-center mt-4">Best Regards, <br> <strong>Quizzy</strong></p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

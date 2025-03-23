@@ -1,12 +1,18 @@
 from celery import Celery
-from flask import current_app as app
+from flask import current_app as app, render_template
+from models import User, Scores, Quiz
 from celery.schedules import crontab
-from celery_dir.tasks import email_reminder
+from celery_dir.tasks import daily_quiz_reminder, send_monthly_report
+from datetime import datetime, timezone
+from extensions import db
 
 celery_app = app.extensions['celery']
 
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender: Celery, **kwargs):
     
-    sender.add_periodic_task(crontab(hour=10, minute=25), email_reminder.s('student@gmail', 'reminder to login', '<h1> Hello Everyone </h1'))
+    # Daily quiz reminder
+    sender.add_periodic_task(crontab(hour=12, minute=40), daily_quiz_reminder.s())
 
+    # Monthly report
+    sender.add_periodic_task(crontab(hour=15, minute=11), send_monthly_report.s())

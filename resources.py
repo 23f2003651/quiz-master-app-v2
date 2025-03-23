@@ -4,6 +4,7 @@ from flask_security import auth_required, current_user
 from models import User, Subject, Chapter, Quiz, Questions, Scores
 from extensions import db, cache
 from datetime import datetime, timezone
+from celery_dir.tasks import send_new_quiz_alert
 import pytz
 
 api = Api(prefix='/api')
@@ -278,7 +279,6 @@ class QuizAPI(Resource):
     def get(self, id=None):
         user_id = current_user.id
         user_role = current_user.roles[0].name
-        print(user_role)
 
         if id:
             quiz = Quiz.query.filter_by(id=id).first()
@@ -336,6 +336,8 @@ class QuizAPI(Resource):
             db.session.commit()
             
             cache.delete_memoized(self.get)
+            
+            send_new_quiz_alert()
 
             return {"message": "Quiz created successfully"}, 201
 

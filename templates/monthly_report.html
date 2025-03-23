@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; }
+        h2 { color: #2c3e50; }
+        p { font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        .highlight { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Monthly Quiz Activity Report</h2>
+        <p>Hello {{ username }},</p>
+        <p>Here’s your quiz performance summary for this month:</p>
+        <table>
+            <tr><th>Total Quizzes Taken</th><td>{{ total_quizzes }}</td></tr>
+            <tr><th>Average Score</th><td class="highlight">{{ average_score }}</td></tr>
+            <tr><th>Best Score</th><td>{{ best_score }}</td></tr>
+            <tr><th>Worst Score</th><td>{{ worst_score }}</td></tr>
+        </table>
+        <p>Keep practicing and improve your scores next month!</p>
+    </div>
+</body>
+</html>

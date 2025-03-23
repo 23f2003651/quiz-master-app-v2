@@ -75,7 +75,11 @@ const user_dashboard = {
 
           if (quizDate < now) {
             this.$store.commit('setAlert', { message: "Quiz has been expired", type: "alert-danger" });
-            location.reload();
+
+            setTimeout(() => {
+              location.reload();
+            }, 2000);                                                                      
+            
             return;
           }
 
