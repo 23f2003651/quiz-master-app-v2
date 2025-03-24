@@ -1,46 +1,84 @@
 
 const admin_quiz = {
-  template: /*html*/`
+  template: `
   <div>
     
     <div class="admin-quiz-parent-container">
       <div class="admin-quiz-container">
         
-        <h1>
+        <h1 class="fw-bold mb-4 d-flex align-items-center">
           Quizzes
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addQuizModal">Add</button>
+          <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addQuizModal"></i>
         </h1>
 
         <div v-for="quiz in quizzes" :key="quiz.id">
           <div class="admin-quiz-header" data-bs-toggle="collapse" :data-bs-target="'#quiz-'+quiz.id">
 
-            <h3 class="fw-bold">
-              {{ quiz.title }} | {{ quiz.duration }} minutes
-              <button class="btn btn-primary" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#addQuestionModal">Add Questions</button>
-            </h3>
+            <div data-bs-toggle="collapse" :data-bs-target="'#quiz-'+quiz.id">
+              <h3 type="button" class="fw-bold subject-names">
+                {{ quiz.title }}
+              </h3>
+            </div>
 
             <!-- Edit & Delete buttons -->
-            <div class="btn-group" role="group">
-              <button class="btn btn-primary" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#editQuizModal" type="button">Edit</button>
-              <button class="btn btn-danger" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#deleteQuizModal" type="button">Delete</button>
+            <div class="dropdown">
+              <button class="btn btn-light border-0 p-2 dots-btn" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#addQuestionModal">➕ Add Question</button></li>
+                <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#editQuizModal">✏️ Edit</button></li>
+                <li><button class="dropdown-item text-danger" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#deleteQuizModal">🗑 Delete</button></li>
+              </ul>
             </div>
+
           </div>
 
           <div class="collapse" :id="'quiz-'+quiz.id">
+            <div>
+              
             <div v-if="quiz.questions.length === 0" class="card card-body">
               No questions available
             </div>
 
-            <div v-for="question in quiz.questions" :key="question.id" class="card card-body">
-              {{ question.id }} - {{ question.question_statement }}
-              <br>
-              {{ question.opt1 }} | {{ question.opt2 }} | {{ question.opt3 }} | {{ question.opt4 }}
-              <br>{{ question.correct_opt }}
-              
-              <div class="btn-group" role="group">
-                <button class="btn btn-primary" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#editQuestionModal" type="button">Edit</button>
-                <button class="btn btn-danger" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#deleteQuestionModal" type="button">Delete</button>
+              <div v-else class="table-responsive-manage mx-auto" style="max-width: 1200px;">
+                <table class="table table-striped table-hover align-middle">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Question Statement</th>
+                      <th>Option-1</th>
+                      <th>Option-2</th>
+                      <th>Option-3</th>
+                      <th>Option-4</th>
+                      <th>Correct Option</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(question, index) in quiz.questions" :key="question.id">
+                      <td>{{ index + 1 }}</td>
+                      <td class="fw-bold">{{ question.question_statement }}</td>
+                      <td>{{ question.opt1 }}</td>
+                      <td>{{ question.opt2 }}</td>
+                      <td>{{ question.opt3 }}</td>
+                      <td>{{ question.opt4 }}</td>
+                      <td>{{ question.correct_opt }}</td>
+                      <td class="text-center">
+                        <div class="btn-group" role="group">
+                          <button class="btn btn-primary btn-sm" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#editQuestionModal">
+                            ✏️ Edit
+                          </button>
+                          <button class="btn btn-danger btn-sm" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#deleteQuestionModal">
+                            🗑 Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+
             </div>
           </div>
 

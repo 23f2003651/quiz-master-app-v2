@@ -3,17 +3,21 @@ const admin_users = {
   template: `
     
   <div>
-    <div class="admin-users-parent-container container mt-4">
-      <div class="admin-users-container">
+  <div class="admin-users-parent-container container mt-4">
+    <div class="admin-users-container p-4 shadow-lg rounded bg-white">
+      
+      <!-- Header -->
+      <div class="fw-bold mb-4 d-flex justify-content-between align-items-center">
+        <h1 class="fw-bold m-0">Users</h1>
+        <button @click="create_csv()" class="btn btn-primary fw-bold px-3 py-2 d-flex align-items-center">
+          <i class="bi bi-download me-2"></i> Download Users Data
+        </button>
+      </div>
 
-      <button @click="create_csv()" class="fw-bold btn btn-primary fw-bold px-4 py-2">
-        <i class="bi bi-download"></i> Download Users Data
-      </button>
-
-        <h1 class="mb-4">Users</h1>
-        
-        <table class="table table-striped table-bordered">
-          <thead class="table-dark">
+      <!-- Users Table -->
+      <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered align-middle">
+          <thead class="table-dark text-center">
             <tr>
               <th scope="col">Username</th>
               <th scope="col">Email</th>
@@ -26,8 +30,15 @@ const admin_users = {
               <td>{{ user.username }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.qualification }}</td>
-              <td>
-                <span class="badge" :class="{'bg-success': user.active, 'bg-danger': !user.active}">
+              <td class="text-center">
+                <span 
+                  role="button" 
+                  @click="setUser(user)" 
+                  class="badge text-white px-3 py-2 rounded-pill" 
+                  :class="{'bg-success': user.active, 'bg-danger': !user.active}" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#toggleUser"
+                >
                   {{ user.active ? 'Yes' : 'No' }}
                 </span>
               </td>
@@ -38,16 +49,42 @@ const admin_users = {
     </div>
   </div>
 
+  <!-- Toggle User Modal -->
+  <modal-component modal-id="toggleUser" title="Toggle User">
+    <template v-slot:body>
+      <p class="text-center fs-5">
+        Are you sure you want to toggle 
+        <span class="fw-bold">{{ currUser.username }}</span> to 
+        <span class="fw-bold" :class="{'text-success': !currUser.active, 'text-danger': currUser.active}">
+          {{ !currUser.active ? 'Active' : 'Inactive' }}
+        </span>?
+      </p>
+    </template>
+
+    <template v-slot:footer>
+      <button class="btn btn-success ms-2" @click="toggleUser(currUser.id)" data-bs-dismiss="modal">
+        Confirm
+      </button>
+    </template>
+  </modal-component>
+
+  </div>
+
 
   `,
 
   data() {
     return {
-      users: ''
+      users: '',
+      currUser: ''
     }
   },
 
   methods: {
+
+    setUser(user) {
+      this.currUser = user;
+    },
 
     // Get all users .get()
     async getUsers() {
@@ -67,6 +104,27 @@ const admin_users = {
         }
       } catch (error) {
         console.log(error);
+      }
+    },
+
+    async toggleUser(id) {
+      const url = window.location.origin
+      const user_id = Number(id)
+
+      try {
+        const res = await axios.put(url + `/api/toggleUser/${user_id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authentication-Token': sessionStorage.getItem('token')
+          }
+        });
+
+        if (res.status === 200) {
+          console.log("User toggled successfully")
+          this.getUsers();
+        }
+      } catch (error) {
+        console.error("Error:", error)
       }
     },
 

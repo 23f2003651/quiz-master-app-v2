@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify, current_app as app, send_fi
 from flask_security import SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password
 from extensions import db, cache
-from models import Role, Chapter, Questions, Scores, Subject, Quiz
+from models import Role, Chapter, Questions, Scores, Subject, Quiz, User
 from datetime import datetime
 from celery_dir.tasks import add, create_user_data_csv
 from celery.result import AsyncResult
@@ -49,6 +49,10 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             return jsonify({"message": "not valid email or password"}), 400
         
         user = user_datastore.find_user(email=email)
+        
+        if not user.active:
+            return jsonify({"message": "User is not active"}), 400
+        
         roles = [role.name for role in user.roles]
         
         if not user:
@@ -214,4 +218,24 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             
         return jsonify([labels, data])
     
+    @app.route('/api/toggleUser/<int:user_id>', methods=["PUT"])
+    def toggle_user(user_id):
+        
+        update_user = User.query.filter_by(id=user_id).first()
+        
+        if not update_user:
+            return jsonify({"message": "User not found"}), 404
+        
+        update_user.active = not update_user.active
+        
+        try:
+            db.session.commit()
+            
+            cache.delete_memoized(UserAPI.get, UserAPI)
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"message": "Error updating user's active field"}), 405
+        
+        return jsonify({"message": "Successfully updated user's active field"}), 200
     

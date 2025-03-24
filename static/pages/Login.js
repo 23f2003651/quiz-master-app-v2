@@ -65,8 +65,9 @@ const Login = {
 			}
 			} catch (error) {
 				console.log("Login Failed");
+				console.log(error.response.data)
 
-				this.$store.commit('setAlert', { message: "Login Failed", type: "alert-danger" });
+				this.$store.commit('setAlert', { message: error.response.data.message, type: "alert-danger" });
 
 			}
 		}

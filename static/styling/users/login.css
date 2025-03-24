@@ -1,4 +1,6 @@
 html, body {
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
     height: 100%;
     margin: 0;

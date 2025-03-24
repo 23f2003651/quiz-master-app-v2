@@ -6,40 +6,74 @@ const admin_dashboard = {
     <div class="admin-dashboard-parent-container">
       <div class="admin-dashboard-container">
       
-      <h1>
+      <h1 class="fw-bold mb-4 d-flex align-items-center">
         Subjects
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">Add</button>
+        <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addSubjectModal"></i>
       </h1>
       
 
         <div v-for="subject in subjects" :key="subject.id">
-          <div class="admin-dashboard-header" data-bs-toggle="collapse" :data-bs-target="'#subject-'+subject.id">
+          <div class="admin-dashboard-header">
 
-            <h3 class="fw-bold">
-              {{ subject.name }} | {{ subject.description }}
-              <button class="btn btn-primary" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#addChapterModal">Add Chapter</button>
-            </h3>
+            <div data-bs-toggle="collapse" :data-bs-target="'#subject-'+subject.id">
+              <h3 type="button" class="fw-bold subject-names">
+                {{ subject.name }}
+              </h3>
+            </div>
 
             <!-- Edit & Delete buttons -->
-            <div class="btn-group" role="group">
-              <button class="btn btn-primary" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#editSubjectModal" type="button">Edit</button>
-              <button class="btn btn-danger" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal" type="button">Delete</button>
+            <div class="dropdown">
+              <button class="btn btn-light border-0 p-2 dots-btn" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#addChapterModal">➕ Add Chapter</button></li>
+                <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#editSubjectModal">✏️ Edit</button></li>
+                <li><button class="dropdown-item text-danger" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal">🗑 Delete</button></li>
+              </ul>
             </div>
           </div>
 
           <div class="collapse" :id="'subject-' + subject.id">
-            <div v-if="subject.chapters.length === 0" class="card card-body">
-              No chapters available
-            </div>
-
-            <div v-for="chapter in subject.chapters" :key="chapter.id" class="card card-body">
-              {{ chapter.id }} - {{ chapter.name }} | {{ chapter.description }}
-              <div class="btn-group" role="group">
-                <button class="btn btn-primary" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#editChapterModal" type="button">Edit</button>
-                <button class="btn btn-danger" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#deleteChapterModal" type="button">Delete</button>
+            <div>
+              
+              <div v-if="subject.chapters.length === 0" class="text-center text-muted">
+                No chapters available
               </div>
+
+              <div v-else class="table-responsive-manage mx-auto" style="max-width: 1200px;">
+                <table class="table table-striped table-hover align-middle">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Chapter Name</th>
+                      <th>Description</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(chapter, index) in subject.chapters" :key="chapter.id">
+                      <td>{{ index + 1 }}</td>
+                      <td class="fw-bold">{{ chapter.name }}</td>
+                      <td>{{ chapter.description }}</td>
+                      <td class="text-center">
+                        <div class="btn-group" role="group">
+                          <button class="btn btn-primary btn-sm" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#editChapterModal">
+                            ✏️ Edit
+                          </button>
+                          <button class="btn btn-danger btn-sm" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#deleteChapterModal">
+                            🗑 Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
             </div>
           </div>
+
         </div>
         
       </div>
@@ -118,7 +152,6 @@ const admin_dashboard = {
       </template>
     </modal-component>
 
-    
 
   </div>
   `,
