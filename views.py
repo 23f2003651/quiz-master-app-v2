@@ -4,22 +4,12 @@ from flask_security.utils import hash_password, verify_password
 from extensions import db, cache
 from models import Role, Chapter, Questions, Scores, Subject, Quiz
 from datetime import datetime
-from celery_dir.tasks import add, create_csv
+from celery_dir.tasks import add, create_user_data_csv
 from celery.result import AsyncResult
 from resources import UserAPI
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
-
-    @app.get('/cache')
-    @cache.cached(timeout = 5)
-    def cached_time():
-        return {'time': (datetime.now())}
-    
-    @app.get('/celery')
-    def celery_test():
-        task = add.delay(10, 20)
-        return {'task_id': task.id}
     
     @app.get('/get-celery-data/<id>')
     def getData(id):
@@ -32,7 +22,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         
     @app.get('/create-csv')
     def createCSV():
-        task = create_csv.delay()
+        task = create_user_data_csv.delay()
         return {'task_id': task.id}
     
     @app.get('/get-csv/<task_id>')

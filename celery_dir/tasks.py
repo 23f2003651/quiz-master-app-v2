@@ -17,21 +17,54 @@ def add(x, y):
     return x+y
 
 @shared_task(bind=True, ignore_result=False)
-def create_csv(self):
+def create_user_data_csv(self):
     
-    resource = Subject.query.all()
+    def calcScore(user_ans, corr_ans):
+        score = 0
+        for key in corr_ans:
+            if key in user_ans and user_ans[key] == corr_ans[key]:
+                score += 1
+        return score
+    
+    users = User.query.all()[1:]
+    data = []
     
     task_id = self.request.id
-    file_name = f"subject_data_{task_id}.csv"
+    file_name = f"user_quiz_data_{task_id}.csv"
     
-    column_names = [column.name for column in Subject.__table__.columns]
-    csv_out = flask_excel.make_response_from_query_sets(resource, column_names=column_names, file_type="csv")
+    column_names = ["user_id", "username", "email", "quizzes_taken", "average_score", "best_score", "worst_score"]
+    
+    for user in users:
+        quizzes = Scores.query.filter(Scores.user_id == user.id).all()
+        
+        total_quizzes = len(quizzes)
+        scores = []
+        
+        for q in quizzes:
+
+            user_answers = json.loads(q.user_answers)
+            correct_answers = json.loads(q.correct_answers)
+            
+            scores.append(calcScore(user_answers, correct_answers))
+        
+        avg_score = round(sum(scores) / total_quizzes, 2) if total_quizzes else 0
+        best_score = max(scores, default=0)
+        worst_score = min(scores, default=0)
+        
+        user_data = [user.id, user.username, user.email, total_quizzes, avg_score, best_score, worst_score]
+        
+        data.append(user_data)
+    
+    data.insert(0, column_names)
+    
+    csv_out = flask_excel.make_response_from_array(data, file_type="csv")
     
     with open(f'./celery_dir/user_downloads/{file_name}', 'wb') as file:
         file.write(csv_out.data)
         
     return file_name
 
+# New quiz alert
 @shared_task(ignore_result=True)    
 def send_new_quiz_alert():
     
@@ -44,6 +77,7 @@ def send_new_quiz_alert():
             send_email(user.email, subject, content)
             print(f"Email sent to {user.email}")
 
+# Daily quiz reminder
 @shared_task(ignore_result=True)
 def daily_quiz_reminder():
     
@@ -75,17 +109,15 @@ def daily_quiz_reminder():
             
     return "Reminder sent successfully"
     
+# User monthly
 @shared_task(ignore_result=True)
 def send_monthly_report():
     
     def calcScore(user_ans, corr_ans):
-        
         score = 0
-
         for key in corr_ans:
             if key in user_ans and user_ans[key] == corr_ans[key]:
                 score += 1
-
         return score
     
     first_day_of_month = datetime(datetime.now().year, datetime.now().month, 1)

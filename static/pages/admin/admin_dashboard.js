@@ -5,8 +5,6 @@ const admin_dashboard = {
 
     <div class="admin-dashboard-parent-container">
       <div class="admin-dashboard-container">
-
-      <button @click="create_csv()">Download Subjects Data</button>
       
       <h1>
         Subjects
@@ -119,8 +117,6 @@ const admin_dashboard = {
         <button class="btn btn-danger" @click="deleteChapter()" data-bs-dismiss="modal">Delete</button>
       </template>
     </modal-component>
-
-    
 
   </div>
   `,
@@ -346,46 +342,6 @@ const admin_dashboard = {
         this.$store.commit('setAlert', { message: "Failed to delete chapter", type: "alert-danger" });
       }
     },
-
-    // Create CSV
-    async create_csv() {
-      const url = window.location.origin;
-      
-      try {
-        const res = await axios.get(url + '/create-csv', {
-          headers: {
-            'Authentication-Token': sessionStorage.getItem('token')
-          }
-        });
-
-        const task_id = res.data.task_id;
-        console.log("Task ID:", task_id);
-
-        const interval = setInterval(async () => {
-          try {
-            const res = await axios.get(url + `/get-csv/${task_id}`, {
-              headers: {
-                'Authentication-Token': sessionStorage.getItem('token')
-              }
-            });
-            
-            if (res.status === 200) {
-              console.log(res.data);
-              window.open(url + `/get-csv/${task_id}`);
-              console.log("DONEDONEDONE")
-              clearInterval(interval);
-            }
-          } catch (error) {
-            console.error("Error while checking task");
-          }
-        }, 100);
-        
-      } catch (error) {
-        console.error("Error starting task");
-      }
-    }
-
-
   },
 
   mounted() {
