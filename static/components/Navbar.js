@@ -1,25 +1,35 @@
 const Navbar = {
   template: `
-  <nav style="height: 60px; background: rgba(0,0,0,0.75) !important; color: white; display: flex; align-items: center; padding: 0 20px;" class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 shadow-sm" style="height: 50px;">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Quizzy</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
 
-        <div class="navbar-nav">
-          <router-link v-for="link in navLinks" :key="link.text" :to="link.to" class="nav-link fw-bold">
+      <!-- Brand Logo (Left) -->
+      <a class="navbar-brand fw-bold fs-4 text-white" href="/" style="padding: 0; margin: 0;">Quizzy</a>
+
+      <div class="collapse navbar-collapse">
+        <!-- Align Navbar Links to Left -->
+        <div class="navbar-nav me-auto ms-3">
+          <router-link v-for="link in navLinks" :key="link.text" :to="link.to" 
+            class="nav-link px-3 fw-semibold text-light">
             {{ link.text }}
           </router-link>
         </div>
 
-        <div class="navbar-nav ms-auto">
-          <a v-if="state.loggedIn" @click="logout" class="nav-link text-danger fw-bold" style="cursor: pointer">Logout</a>
+        <!-- Logout Button (Right) -->
+        <div class="navbar-nav">
+          <a v-if="state.loggedIn" @click="logout" class="nav-link text-danger fw-bold px-3" style="cursor: pointer;">
+            Logout
+          </a>
         </div>
       </div>
+
     </div>
   </nav>
+
+
+
+
+
   `,
 
   computed: {

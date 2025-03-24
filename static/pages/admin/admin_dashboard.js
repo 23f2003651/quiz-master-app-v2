@@ -118,6 +118,8 @@ const admin_dashboard = {
       </template>
     </modal-component>
 
+    
+
   </div>
   `,
 
