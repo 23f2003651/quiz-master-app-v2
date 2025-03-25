@@ -6,13 +6,24 @@ const admin_dashboard = {
     <div class="admin-dashboard-parent-container">
       <div class="admin-dashboard-container">
       
-      <h1 class="fw-bold mb-4 d-flex align-items-center">
-        Subjects
-        <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addSubjectModal"></i>
-      </h1>
+      <div class="fw-bold mb-4 d-flex align-items-center justify-content-between">
+        <div>
+          <h1 class="fw-bold">
+            Subjects
+            <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addSubjectModal"></i>
+          </h1>
+        </div>
+
+        <div class="input-group w-25">
+          <span class="input-group-text bg-white border-end-0">
+              <SearchIcon />
+          </span>
+          <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
+        </div>
+      </div>
       
 
-        <div v-for="subject in subjects" :key="subject.id">
+        <div v-for="subject in filteredSubjects" :key="subject.id">
           <div class="admin-dashboard-header">
 
             <div data-bs-toggle="collapse" :data-bs-target="'#subject-'+subject.id">
@@ -28,8 +39,8 @@ const admin_dashboard = {
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#addChapterModal">➕ Add Chapter</button></li>
-                <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#editSubjectModal">✏️ Edit</button></li>
-                <li><button class="dropdown-item text-danger" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal">🗑 Delete</button></li>
+                <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#editSubjectModal"><i class="fas fa-pencil-alt"></i> Edit</button></li>
+                <li><button class="dropdown-item text-danger" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal"><i class="fas fa-trash-alt"></i> Delete</button></li>
               </ul>
             </div>
           </div>
@@ -59,10 +70,10 @@ const admin_dashboard = {
                       <td class="text-center">
                         <div class="btn-group" role="group">
                           <button class="btn btn-primary btn-sm" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#editChapterModal">
-                            ✏️ Edit
+                            <i class="fas fa-pencil-alt"></i>
                           </button>
                           <button class="btn btn-danger btn-sm" @click="setChapter(chapter)" data-bs-toggle="modal" data-bs-target="#deleteChapterModal">
-                            🗑 Delete
+                            <i class="fas fa-trash-alt"></i>
                           </button>
                         </div>
                       </td>
@@ -159,6 +170,7 @@ const admin_dashboard = {
   data() {
     return {
       subjects: [],
+      filteredSubjects: [],
 
       // add new subject & chapter
       addSubjectName: "",
@@ -174,7 +186,10 @@ const admin_dashboard = {
       newSubjectName: "",
       newSubjectDesc: "",
       newChapterName: "",
-      newChapterDesc: ""
+      newChapterDesc: "",
+
+      // search query
+      searchQuery: ""
 
     }
   },
@@ -211,6 +226,7 @@ const admin_dashboard = {
         if (res.status == 200) {
           console.log("Subjects retrieved");
           this.subjects = res.data;
+          this.filteredSubjects = res.data;
         }
       } catch (error) {
         console.error(error);
@@ -377,6 +393,20 @@ const admin_dashboard = {
         this.$store.commit('setAlert', { message: "Failed to delete chapter", type: "alert-danger" });
       }
     },
+  },
+
+  watch: {
+    searchQuery: function(newSearch) {
+      console.log(newSearch)
+      if (!newSearch) {
+        this.filteredSubjects = this.subjects;
+      } else {
+        this.filteredSubjects = this.subjects.filter(subject => 
+          subject.name.toLowerCase().includes(newSearch.toLowerCase()) ||
+          subject.chapters.some(chap => chap.name.toLowerCase().includes(newSearch.toLowerCase()))
+        );
+      }
+    }
   },
 
   mounted() {

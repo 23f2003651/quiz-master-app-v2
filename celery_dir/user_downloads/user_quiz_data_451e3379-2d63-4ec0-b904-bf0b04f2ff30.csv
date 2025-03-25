@@ -1,0 +1,5 @@
+user_id,username,email,quizzes_taken,average_score,best_score,worst_score
+2,User,user@gmail.com,0,0,0,0
+3,Test,test@gmail.com,5,0.4,1,0
+4,Akshobh,akshobh.verma@gmail.com,1,0.0,0,0
+5,test3,test3@gmail.com,1,1.0,1,1

@@ -8,11 +8,13 @@ import LoginIcon from "./components/LoginIcon.js";
 import Modal from "./components/Modal.js";
 import CardComponent from "./components/Card.js";
 import ChartComponent from "./components/Chart.js";
+import SearchIcon from "./components/SearchIcon.js";
 
 Vue.component("LoginIcon", LoginIcon);
 Vue.component("modal-component", Modal);
 Vue.component("card-component", CardComponent)
 Vue.component("chart-component", ChartComponent)
+Vue.component("SearchIcon", SearchIcon)
 
 console.log("app.js loaded");
 

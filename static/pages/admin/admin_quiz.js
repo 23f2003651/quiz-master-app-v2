@@ -6,13 +6,24 @@ const admin_quiz = {
     <div class="admin-quiz-parent-container">
       <div class="admin-quiz-container">
         
-        <h1 class="fw-bold mb-4 d-flex align-items-center">
-          Quizzes
-          <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addQuizModal"></i>
-        </h1>
+        <div class="fw-bold mb-4 d-flex align-items-center justify-content-between">
+          <div>
+            <h1 class="fw-bold">
+              Quizzes
+              <i type="button" class="fa-solid fa-circle-plus ms-2 add-icon" data-bs-toggle="modal" data-bs-target="#addQuizModal"></i>
+            </h1>
+          </div>
 
-        <div v-for="quiz in quizzes" :key="quiz.id">
-          <div class="admin-quiz-header" data-bs-toggle="collapse" :data-bs-target="'#quiz-'+quiz.id">
+          <div class="input-group w-25">
+            <span class="input-group-text bg-white border-end-0">
+                <SearchIcon />
+            </span>
+            <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
+          </div>
+        </div>
+
+        <div v-for="quiz in filteredQuizzes" :key="quiz.id">
+          <div class="admin-quiz-header">
 
             <div data-bs-toggle="collapse" :data-bs-target="'#quiz-'+quiz.id">
               <h3 type="button" class="fw-bold subject-names">
@@ -27,8 +38,8 @@ const admin_quiz = {
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#addQuestionModal">➕ Add Question</button></li>
-                <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#editQuizModal">✏️ Edit</button></li>
-                <li><button class="dropdown-item text-danger" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#deleteQuizModal">🗑 Delete</button></li>
+                <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#editQuizModal"><i class="fas fa-pencil-alt"></i> Edit</button></li>
+                <li><button class="dropdown-item text-danger" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#deleteQuizModal"><i class="fas fa-trash-alt"></i> Delete</button></li>
               </ul>
             </div>
 
@@ -67,10 +78,10 @@ const admin_quiz = {
                       <td class="text-center">
                         <div class="btn-group" role="group">
                           <button class="btn btn-primary btn-sm" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#editQuestionModal">
-                            ✏️ Edit
+                            <i class="fas fa-pencil-alt"></i>
                           </button>
                           <button class="btn btn-danger btn-sm" @click="setQuestion(question)" data-bs-toggle="modal" data-bs-target="#deleteQuestionModal">
-                            🗑 Delete
+                            <i class="fas fa-trash-alt"></i>
                           </button>
                         </div>
                       </td>
@@ -225,6 +236,8 @@ const admin_quiz = {
   data() {
     return {
       quizzes: [],
+      filteredQuizzes: [],
+
       subjects: [],
       chapters: [],
 
@@ -254,7 +267,9 @@ const admin_quiz = {
       editOption2: '',
       editOption3: '',
       editOption4: '',
-      editCorrectOption: ''
+      editCorrectOption: '',
+
+      searchQuery: ""
 
     }
   },
@@ -294,6 +309,7 @@ const admin_quiz = {
         if (res.status == 200) {
           console.log("Quizzes retrieved");
           this.quizzes = res.data;
+          this.filteredQuizzes = res.data;
         }
       } catch (error) {
         console.log("No quizzes found");
@@ -529,6 +545,18 @@ const admin_quiz = {
       }
     }
 
+  },
+
+  watch: {
+    searchQuery: function(newSearch) {
+      console.log(newSearch)
+      if (!newSearch) {
+        this.filteredQuizzes = this.quizzes;
+      } else {
+        this.filteredQuizzes = this.quizzes.filter(quiz => 
+          quiz.title.toLowerCase().includes(newSearch.toLowerCase()));
+      }
+    }
   },
 
   mounted() {

@@ -9,9 +9,19 @@ const admin_users = {
       <!-- Header -->
       <div class="fw-bold mb-4 d-flex justify-content-between align-items-center">
         <h1 class="fw-bold m-0">Users</h1>
-        <button @click="create_csv()" class="btn btn-primary fw-bold px-3 py-2 d-flex align-items-center">
-          <i class="bi bi-download me-2"></i> Download Users Data
-        </button>
+
+        <div>
+          <button @click="create_csv()" class="btn btn-primary fw-bold px-3 py-2 d-flex align-items-center">
+            <i class="bi bi-download me-2"></i> Download Users Data
+          </button>
+        </div>
+
+        <div class="input-group w-25">
+          <span class="input-group-text bg-white border-end-0">
+              <SearchIcon />
+          </span>
+          <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
+        </div>
       </div>
 
       <!-- Users Table -->
@@ -26,7 +36,7 @@ const admin_users = {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="user in users.slice(1)" :key="user.id">
+            <tr v-for="user in filteredUsers" :key="user.id">
               <td>{{ user.username }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.qualification }}</td>
@@ -75,8 +85,12 @@ const admin_users = {
 
   data() {
     return {
-      users: '',
-      currUser: ''
+      users: [],
+      filteredUsers: [],
+
+      currUser: '',
+
+      searchQuery: ''
     }
   },
 
@@ -101,6 +115,10 @@ const admin_users = {
         if (res.status === 200) {
           console.log("Users retrieved")
           this.users = res.data;
+          this.users = this.users.slice(1)
+
+          this.filteredUsers = res.data;
+          this.filteredUsers = this.filteredUsers.slice(1)
         }
       } catch (error) {
         console.log(error);
@@ -162,6 +180,28 @@ const admin_users = {
         
       } catch (error) {
         console.error("Error starting task");
+      }
+    }
+  },
+
+  watch: {
+    searchQuery: function(newSearch) {
+
+      newSearch = newSearch.trim().toLowerCase();
+      
+      if (!this.users || this.users.length === 0) {
+        console.warn("Users list is empty, skipping search.");
+        return;
+      }
+
+      if (!newSearch.trim()) {
+        this.filteredUsers = this.users;
+      } else {
+        this.filteredUsers = this.users.filter(user => 
+          user.username.toLowerCase().includes(newSearch.toLowerCase()) ||
+          user.email && user.email.toLowerCase().includes(newSearch) ||
+          user.qualification && user.qualification.toLowerCase().includes(newSearch)
+        );
       }
     }
   },

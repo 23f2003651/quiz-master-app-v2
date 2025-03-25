@@ -4,8 +4,18 @@ const user_scores = {
   <div class="container mt-4">
     <div class="user-scores-parent-container">
       <div class="user-scores-container table-responsive">
-        
-        <h2 class="mb-3">Scores</h2>
+
+        <!-- Header -->
+        <div class="fw-bold mb-4 d-flex justify-content-between align-items-center">
+          <h1 class="fw-bold m-0">Scores</h1>
+
+          <div class="input-group w-25">
+            <span class="input-group-text bg-white border-end-0">
+                <SearchIcon />
+            </span>
+            <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
+          </div>
+        </div>
 
         <table v-if="scores.length" class="table table-striped">
           <thead class="table-dark">
@@ -14,12 +24,12 @@ const user_scores = {
               <th scope="col">Subject Name</th>
               <th scope="col">Chapter Name</th>
               <th scope="col">Marks</th>
-              <th scope="col">Submitted At</th>
+              <th scope="col">Submission Time</th>
               <th scope="col">Details</th>
             </tr>
           </thead>
           <tbody class="table-group-divider">
-            <tr v-for="(score, index) in scores" :key="index">
+            <tr v-for="(score, index) in filteredScores" :key="index">
               <td>{{ index+1 }}</td>
               <td>{{ getQuizSubjectName(score.subject_id) }}</td>
               <td>{{ getQuizChapterName(score.chapter_id) }}</td>
@@ -54,8 +64,6 @@ const user_scores = {
           </div>
           <div class="modal-body">
 
-                
-            
               <div v-for="(question, sno) in currQuiz.questions" :key="sno" class="mb-4">
                 <p class="fw-bold">
                   Q{{ sno + 1 }}: <span :class="{'text-success': isCorrect(currQuiz.id, question.id), 'text-danger': isIncorrect(currQuiz.id, question.id)}">{{ question.question_statement }}</span>
@@ -90,6 +98,8 @@ const user_scores = {
 
       subjects: [],
       chapters: [],
+
+      searchQuery: "",
 
       score_percentage: 0,
 
@@ -199,6 +209,7 @@ const user_scores = {
         if (res.status == 200) {
           console.log("fetched scores");
           this.scores = res.data;
+          this.filteredScores = res.data;
         }
       } catch (error) {
         console.error(error);
@@ -271,6 +282,23 @@ const user_scores = {
       console.log("View score details")
     }
   },
+
+  watch: {
+    searchQuery: function(newSearch) {
+      newSearch = newSearch.trim().toLowerCase();
+  
+      if (!newSearch) {
+        this.filteredScores = this.scores;
+      } else {
+        this.filteredScores = this.scores.filter(score => {
+          const subjectMatch = this.getQuizSubjectName(score.subject_id).toLowerCase().includes(newSearch);
+          const chapterMatch = this.getQuizChapterName(score.chapter_id).toLowerCase().includes(newSearch);
+  
+          return subjectMatch || chapterMatch;
+        });
+      }
+    }
+  },  
 
   mounted() {
     this.getScores();

@@ -3,9 +3,15 @@ const user_dashboard = {
   template: `
   <div>
     <div class="container py-5">
+      <div class="input-group w-100 mb-5 mx-auto">
+        <span class="input-group-text bg-white border-end-0">
+            <SearchIcon />
+        </span>
+        <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
+      </div>
       <div class="main-container row g-4 justify-content-space-between">
               
-        <card-component v-for="quiz in quizzes" :key="quiz.id" v-if="quiz.questions.length!=0" :title="getQuizSubjectName(quiz.subject_id)">
+        <card-component v-for="quiz in filteredQuizzes" :key="quiz.id" v-if="quiz.questions.length!=0" :title="getQuizSubjectName(quiz.subject_id)">
           <template v-slot:body>
             <div class="quiz-details"><strong>Chapter:</strong> {{getQuizChapterName(quiz.chapter_id)}}</div>
             <div class="quiz-details"><strong>Questions:</strong> {{quiz.questions.length}} </div>
@@ -25,9 +31,14 @@ const user_dashboard = {
 
   data() {
     return {
-      quizzes: '',
+      quizzes: [],
+      filteredQuizzes: [],
+
       subjects: [],
-      chapters: []
+
+      chapters: [],
+
+      searchQuery: ""
     }
   },
 
@@ -113,6 +124,10 @@ const user_dashboard = {
             const quizDate = new Date(quiz.date_of_quiz);
             return quizDate > now;
           });
+          this.filteredQuizzes = res.data.filter(quiz => {
+            const quizDate = new Date(quiz.date_of_quiz);
+            return quizDate > now;
+          });
 
           console.log("Filtered Quizzes: ", this.quizzes);
         }
@@ -163,6 +178,30 @@ const user_dashboard = {
         console.error(error);
       }
     },
+  },
+
+  watch: {
+    searchQuery: function(newSearch) {
+      newSearch = newSearch.trim().toLowerCase();
+  
+      if (!newSearch) {
+        this.filteredQuizzes = this.quizzes;
+      } else {
+        this.filteredQuizzes = this.quizzes.filter(quiz => {
+          const quizTitleMatch = quiz.title.toLowerCase().includes(newSearch);
+  
+          const subjectMatch = this.getQuizSubjectName(quiz.subject_id)
+            .toLowerCase()
+            .includes(newSearch);
+  
+          const chapterMatch = this.getQuizChapterName(quiz.chapter_id)
+            .toLowerCase()
+            .includes(newSearch);
+  
+          return quizTitleMatch || subjectMatch || chapterMatch;
+        });
+      }
+    }
   },
 
   mounted() {
