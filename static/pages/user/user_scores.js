@@ -199,7 +199,7 @@ const user_scores = {
       const user_id = +sessionStorage.getItem('id');
       
       try {
-        const res = await axios.get(url + `/api/get-scores/${user_id}`, {
+        const res = await axios.get(url + `/api/get-history-scores/${user_id}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authentication-Token': sessionStorage.getItem('token')

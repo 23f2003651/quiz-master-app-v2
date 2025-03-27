@@ -7,26 +7,62 @@
   min-width: fit-content;
   max-width: 90vw;
   width: auto;
-  padding: 10px 15px;
-  padding-right: 30px;
-  white-space: nowrap;
-  overflow: hidden;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 12px 18px;
+  padding-right: 15px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Align content to the left */
+  justify-content: flex-start; 
+  gap: 10px;
+  font-weight: 600;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.global-alert .btn-close {
+/* Error (Danger) Alert */
+.alert.danger {
+  background: #F8D7DA;
+  border: 1px solid #DC3545;
+  color: #721C24;
+}
+
+/* Success Alert */
+.alert.success {
+  background: #D4EDDA;
+  border: 1px solid #28A745;
+  color: #155724;
+}
+
+/* Icon styles */
+.icon {
+  font-size: 18px;
+}
+
+.message {
+  margin-right: 18px;
+}
+
+/* Error Icon */
+.alert.danger .icon i {
+  color: #DC3545;
+}
+
+/* Success Icon */
+.alert.success .icon i {
+  color: #28A745;
+}
+
+/* Close button */
+.global-alert .close-btn {
   position: absolute;
-  font-weight: bold;
-  padding-left: 10px;
   top: 5px;
-  right: 5px;
-  font-size: 0.45rem;
-  line-height: 1;
+  right: 8px;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
 }
 
-.btn-close::after {
-  content: none;
+.global-alert .btn-close:hover {
+  opacity: 0.7;
 }

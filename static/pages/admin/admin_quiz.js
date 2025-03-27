@@ -40,6 +40,7 @@ const admin_quiz = {
                 <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#addQuestionModal">➕ Add Question</button></li>
                 <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#editQuizModal"><i class="fas fa-pencil-alt"></i> Edit</button></li>
                 <li><button class="dropdown-item text-danger" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#deleteQuizModal"><i class="fas fa-trash-alt"></i> Delete</button></li>
+                <li><button class="dropdown-item" @click="setQuiz(quiz)" data-bs-toggle="modal" data-bs-target="#infoQuizModal"><i class="fa-solid fa-circle-info"></i> Info</button></li>
               </ul>
             </div>
 
@@ -230,6 +231,18 @@ const admin_quiz = {
       </template>
     </modal-component>
 
+    <!-- Quiz Info -->
+    <modal-component modal-id="infoQuizModal" title="Quiz Info">
+      <template v-slot:body>
+        <p>Title : {{ currQuiz.title }}</p>
+        <p>Duration : {{ currQuiz.duration }}</p>
+        <p>Date : {{ formatDate(currQuiz.date_of_quiz) }}</p>
+      </template>
+
+      <template v-slot:footer>
+      </template>
+    </modal-component>
+
   </div>
   `,
 
@@ -275,6 +288,19 @@ const admin_quiz = {
   },
 
   methods: {
+    formatDate(date) {
+      const utcDate = new Date(date + "Z"); // Ensure it's treated as UTC
+      return utcDate.toLocaleString('en-GB', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata'  // Force UTC to avoid conversion
+      });
+    },
+
     setQuiz(quiz) {
       this.currQuiz = quiz;
       this.newQuizTitle = quiz.title;

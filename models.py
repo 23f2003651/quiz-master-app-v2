@@ -75,4 +75,16 @@ class Scores(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
     subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)
-
+    
+class ScoresHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time_stamp_of_attempt = db.Column(DateTime, default=func.now())
+    
+    user_answers = db.Column(db.Text, nullable=False)
+    correct_answers = db.Column(db.Text, nullable=False)
+    quiz_title = db.Column(db.String(200), nullable=False)
+    
+    quiz_id = db.Column(db.Integer, db.ForeignKey("quiz.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey("subject.id"), nullable=False)

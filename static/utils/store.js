@@ -4,7 +4,9 @@ const store = new Vuex.Store({
     token: sessionStorage.getItem('token'),
     alertMessage: "",
     alertType: "",
-    showAlert: false
+    showAlert: false,
+    ongoingQuiz: false,
+    activeQuiz: null,
   },
 
   mutations: {
@@ -29,6 +31,12 @@ const store = new Vuex.Store({
     },
     hideAlert(state) {
       state.showAlert = false;
+    },
+    setOngoingQuiz(state, status) {
+      state.ongoingQuiz = status;
+    },
+    setActiveQuiz(state, id) {
+      state.activeQuiz = id
     }
   }
 })

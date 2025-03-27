@@ -15,7 +15,7 @@ const ChartComponent = {
   },
   data() {
     return {
-      chartInstance: null, // Store chart instance
+      chartInstance: null,
     };
   },
   mounted() {
@@ -23,7 +23,7 @@ const ChartComponent = {
   },
   watch: {
     chartData: {
-      deep: true, // Watches nested properties
+      deep: true,
       handler() {
         this.updateChart();
       }
@@ -46,7 +46,7 @@ const ChartComponent = {
           scales: {
             y: {
               beginAtZero: true,
-              suggestedMax: maxDataValue + 1, // Extends y-axis by 1
+              suggestedMax: maxDataValue + 1,
             }
           },
           plugins: {
@@ -61,9 +61,9 @@ const ChartComponent = {
     },
     updateChart() {
       if (this.chartInstance) {
-        this.chartInstance.destroy(); // Destroy old chart instance
+        this.chartInstance.destroy();
       }
-      this.renderChart(); // Re-render the chart
+      this.renderChart();
     }
   }
 };

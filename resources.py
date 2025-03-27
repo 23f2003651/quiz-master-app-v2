@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from flask_restful import Resource, Api, reqparse, fields, marshal_with
-from flask_security import auth_required, current_user
+from flask_security import auth_required, current_user, roles_required
 from models import User, Subject, Chapter, Quiz, Questions, Scores
 from extensions import db, cache
 from datetime import datetime, timezone
@@ -111,6 +111,7 @@ class SubjectAPI(Resource):
         return {"message": "No subjects found"}, 404
     
     @auth_required('token')
+    @roles_required('admin')
     def post(self, id=None):
         
         data = request.get_json();
@@ -138,6 +139,7 @@ class SubjectAPI(Resource):
             return {"message": str(e)}, 500
     
     @auth_required('token')
+    @roles_required('admin')
     def delete(self, id):
         subject = Subject.query.filter_by(id=id).first()
         if not subject:
@@ -156,6 +158,7 @@ class SubjectAPI(Resource):
         return {"message": "Subject deleted successfully"}, 204
     
     @auth_required('token')
+    @roles_required('admin')
     def put(self, id):
         subject = Subject.query.filter_by(id=id).first()
         if not subject:
@@ -196,6 +199,7 @@ class ChapterAPI(Resource):
         return {"message": "No chapters found"}, 404
     
     @auth_required('token')
+    @roles_required('admin')
     def post(self):
         data = request.get_json();
         
@@ -224,6 +228,7 @@ class ChapterAPI(Resource):
             return {"message": str(e)}, 500
         
     @auth_required('token')
+    @roles_required('admin')
     def delete(self, id):
         chapter = Chapter.query.filter_by(id=id).first()
         if not chapter:
@@ -243,6 +248,7 @@ class ChapterAPI(Resource):
         return {"message": "Chapter deleted successfully"}, 204
     
     @auth_required('token')
+    @roles_required('admin')
     def put(self, id):
         chapter = Chapter.query.filter_by(id=id).first()
         if not chapter:
@@ -299,6 +305,7 @@ class QuizAPI(Resource):
         return {"message": "No quizzes found"}, 404
     
     @auth_required('token')
+    @roles_required('admin')
     def post(self):
         data = request.get_json()
 
@@ -346,6 +353,7 @@ class QuizAPI(Resource):
             return {"message": str(e)}, 500
     
     @auth_required('token')
+    @roles_required('admin')
     def delete(self, id):
         quiz = Quiz.query.filter_by(id=id).first()
         if not quiz:
@@ -364,6 +372,7 @@ class QuizAPI(Resource):
         return {"message": "Quiz deleted successfully"}, 204
     
     @auth_required('token')
+    @roles_required('admin')
     def put(self, id):
         quiz = Quiz.query.filter_by(id=id).first()
         if not quiz:
@@ -406,7 +415,6 @@ class QuizAPI(Resource):
             db.session.rollback()
             return {"message": str(e)}, 500
 
-
 # Questions API
 class QuestionsAPI(Resource):
     @auth_required('token')
@@ -420,6 +428,7 @@ class QuestionsAPI(Resource):
         return {"message": "No question found"}, 404
     
     @auth_required('token')
+    @roles_required('admin')
     def post(self):
         data = request.get_json()
         
@@ -456,6 +465,7 @@ class QuestionsAPI(Resource):
             return {"message": str(e)}, 500
         
     @auth_required('token')
+    @roles_required('admin')
     def delete(self, id):
         question = Questions.query.filter_by(id=id).first()
         if not question:
@@ -475,6 +485,7 @@ class QuestionsAPI(Resource):
         return {"message": "Question deleted successfully"}, 204
     
     @auth_required('token')
+    @roles_required('admin')
     def put(self, id):
         question = Questions.query.filter_by(id=id).first()
         if not question:

@@ -1,8 +1,8 @@
 from flask import render_template, request, jsonify, current_app as app, send_file
-from flask_security import SQLAlchemyUserDatastore, current_user
+from flask_security import SQLAlchemyUserDatastore, current_user, roles_required
 from flask_security.utils import hash_password, verify_password
 from extensions import db, cache
-from models import Role, Chapter, Questions, Scores, Subject, Quiz, User
+from models import Role, Chapter, Questions, Scores, Subject, Quiz, User, ScoresHistory
 from datetime import datetime
 from celery_dir.tasks import add, create_user_data_csv
 from celery.result import AsyncResult
@@ -10,15 +10,6 @@ from resources import UserAPI
 import json
 
 def create_view(app, user_datastore: SQLAlchemyUserDatastore):
-    
-    @app.get('/get-celery-data/<id>')
-    def getData(id):
-        result = AsyncResult(id)
-        
-        if result.ready():
-            return {'result': result.result}, 200
-        else:
-            return {'message': 'task not ready'}, 405
         
     @app.get('/create-csv')
     def createCSV():
@@ -115,6 +106,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         return jsonify([{"id": c.id, "name": c.name} for c in chapters])
     
     @app.route('/api/submit-quiz', methods=["GET", "POST"])
+    @roles_required('user')
     def submit_quiz():
         data = request.get_json();
         answers = data.get('answers')
@@ -127,13 +119,16 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             return jsonify({"error": "Invalid request"}), 400
         
         questions = Questions.query.filter_by(quiz_id=quiz_id).all()
+        quiz = Quiz.query.filter_by(id=quiz_id).first()
+        
         correct_answers = {q.id: q.correct_opt for q in questions}
         
         print(answers)
         
         try:
             new_score = Scores(user_answers=json.dumps(answers), correct_answers=json.dumps(correct_answers), user_id=user_id, chapter_id=chapter_id, subject_id=subject_id, quiz_id=quiz_id)
-            db.session.add(new_score)
+            new_history_score = ScoresHistory(user_answers=json.dumps(answers), correct_answers=json.dumps(correct_answers), user_id=user_id, chapter_id=chapter_id, subject_id=subject_id, quiz_id=quiz_id, quiz_title=quiz.title)
+            db.session.add_all([new_score, new_history_score])
             db.session.commit()
         except Exception as e:
             db.session.rollback()
@@ -147,6 +142,30 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
     def get_scores(id):
 
         scores = Scores.query.filter_by(user_id=id).all()
+
+        if not scores:
+            return jsonify({"message": "No scores found for this user"}), 404
+
+        scores_list = []
+        for score in scores:
+            scores_list.append({
+                "id": score.id,
+                "time_stamp_of_attempt": score.time_stamp_of_attempt,
+                "user_answers": json.loads(score.user_answers),
+                "correct_answers": json.loads(score.correct_answers),
+                "user_id": score.user_id,
+                "chapter_id": score.chapter_id,
+                "subject_id": score.subject_id,
+                "quiz_id": score.quiz_id
+            })
+
+        return jsonify(scores_list), 200
+    
+    @app.route('/api/get-history-scores/<int:id>', methods=["GET"])
+    @cache.memoize(timeout=5)
+    def get_history_scores(id):
+
+        scores = ScoresHistory.query.filter_by(user_id=id).all()
 
         if not scores:
             return jsonify({"message": "No scores found for this user"}), 404
@@ -180,6 +199,46 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
             data.append(len(subject.chapters))
         
         return jsonify([labels, data])
+       
+    @app.route('/api/chart-data/quizzes', methods=["GET"])
+    @cache.memoize(timeout=5)
+    def quiz_data():
+
+        quizzes = Quiz.query.all()
+        labels = []
+        data = []
+
+        for quiz in quizzes:
+            labels.append(quiz.title)
+            data.append(len(quiz.questions))
+        
+        return jsonify([labels, data])
+       
+    @app.route('/api/chart-data/activeUsers', methods=["GET"])
+    @cache.memoize(timeout=5)
+    def active_users_data():
+
+        users = User.query.all()[1:]
+        labels = ["Active", "Inactive"]
+        
+        active_count = sum(1 for user in users if user.active)
+        inactive_count = len(users) - active_count
+        
+        data = [active_count, inactive_count]
+        
+        return jsonify([labels, data])
+       
+    @app.route('/api/chart-data/adminStatsData', methods=["GET"])
+    @cache.memoize(timeout=5)
+    @roles_required('admin')
+    def admin_stats_data():
+
+        total_users = db.session.query(User).count() - 1
+        total_subjects = db.session.query(Subject).count()
+        total_quizzes = db.session.query(Quiz).count()
+        total_chapters = db.session.query(Chapter).count()
+        
+        return jsonify([total_users, total_subjects, total_quizzes, total_chapters])
     
     @app.route('/api/chart-data/user-scores', methods=["GET"])
     @cache.memoize(timeout=5)
@@ -188,36 +247,44 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         def get_score(user_ans, corr_ans):
             score = 0
             total_marks = len(corr_ans)
-            
+
             for key in corr_ans:
-                if (user_ans[key] and int(user_ans[key]) == int(corr_ans[key])):
-                    score += 1
-            
-            return (score/total_marks)*100
-        
+                user_value = user_ans.get(key, "")
+                correct_value = corr_ans.get(key, "")
+
+                user_str = str(user_value).strip()
+                correct_str = str(correct_value).strip()
+
+                if user_str.isdigit() and correct_str.isdigit():
+                    if int(user_str) == int(correct_str):
+                        score += 1
+
+            return (score / total_marks) * 100 if total_marks > 0 else 0
+
         user_id = current_user.id
-        
-        scores = Scores.query.filter_by(user_id=user_id).all()
-        
+        scores = ScoresHistory.query.filter_by(user_id=user_id).all()
+
+        total_quizzes = len(scores)
+
         labels = []
         data = []
-        
+
         for score in scores:
             user_answers = json.loads(score.user_answers)
             correct_answers = json.loads(score.correct_answers)
-            
+
             quiz = Quiz.query.filter_by(id=score.quiz_id).first()
+            quiz_title = score.quiz_title if not quiz else quiz.title
             
-            print(type(user_answers))
-            
-            labels.append(quiz.title)
+            labels.append(quiz_title)
             data.append(get_score(user_answers, correct_answers))
-            
-        print(labels)
-        print(data)
-            
-        return jsonify([labels, data])
-    
+        
+        avg_score = round(sum(data) / total_quizzes, 2) if total_quizzes else 0
+        best_score = max(data, default=0)
+        worst_score = min(data, default=0)
+        
+        return jsonify([labels, data, [total_quizzes, avg_score, best_score, worst_score]])
+
     @app.route('/api/toggleUser/<int:user_id>', methods=["PUT"])
     def toggle_user(user_id):
         

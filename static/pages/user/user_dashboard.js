@@ -10,22 +10,39 @@ const user_dashboard = {
         <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Search...">
       </div>
       <div class="main-container row g-4 justify-content-space-between">
-              
-        <card-component v-for="quiz in filteredQuizzes" :key="quiz.id" v-if="quiz.questions.length!=0" :title="getQuizSubjectName(quiz.subject_id)">
+
+        <p v-if="filteredQuizzes.every(q => q.questions.length === 0)" class="text-center fs-4 w-100">
+          No quizzes available
+        </p>
+
+        <card-component v-for="quiz in filteredQuizzes" :key="quiz.id" v-if="quiz.questions.length !== 0" :title="getQuizSubjectName(quiz.subject_id)">
           <template v-slot:body>
-            <div class="quiz-details"><strong>Chapter:</strong> {{getQuizChapterName(quiz.chapter_id)}}</div>
-            <div class="quiz-details"><strong>Questions:</strong> {{quiz.questions.length}} </div>
+            <div class="quiz-details"><strong>Chapter:</strong> {{ getQuizChapterName(quiz.chapter_id) }}</div>
+            <div class="quiz-details"><strong>Questions:</strong> {{ quiz.questions.length }} </div>
             <div class="quiz-details"><strong>Time Limit:</strong> {{ quiz.duration }} seconds</div>
             <div class="quiz-details"><strong>Deadline:</strong> {{ formatDate(quiz.date_of_quiz) }}</div>
           </template>
 
           <template v-slot:footer>
-            <button class="card-button btn btn-primary" @click="startQuiz(quiz.id)">Start Quiz</button>
+            <button class="card-button btn btn-primary" data-bs-toggle="modal" data-bs-target="#startQuizModal" @click="setQuiz(quiz)">Start Quiz</button>
           </template>
         </card-component>
 
       </div>
+
     </div>
+
+    <!-- Start Quiz -->
+    <modal-component modal-id="startQuizModal" title="Start Quiz">
+      <template v-slot:body>
+        <p>Are you sure you want to start the quiz?</p>
+      </template>
+
+      <template v-slot:footer>
+        <button class="btn btn-success" data-bs-dismiss="modal" @click="startQuiz(currQuiz.id)">Start</button>
+      </template>
+    </modal-component>
+
   </div>
   `,
 
@@ -38,11 +55,17 @@ const user_dashboard = {
 
       chapters: [],
 
+      currQuiz: "",
+
       searchQuery: ""
     }
   },
 
   methods: {
+
+    setQuiz(quiz) {
+      this.currQuiz = quiz;
+    },
 
     formatDate(date) {
       const utcDate = new Date(date + "Z"); // Ensure it's treated as UTC
@@ -70,6 +93,14 @@ const user_dashboard = {
     },
 
     async startQuiz(quiz_id) {
+
+      if (this.$store.state.ongoingQuiz) {
+        this.$store.commit('setAlert', { message: "You have an ongoing quiz", type: "alert-danger" });
+        const activeQuizID = Number(this.$store.state.activeQuiz);
+        this.$router.push(`/quiz/${activeQuizID}`);
+        return
+      }
+
       try {
         const url = window.location.origin + `/api/quiz/${quiz_id}`;
         const res = await axios.get(url, {
@@ -93,7 +124,10 @@ const user_dashboard = {
             
             return;
           }
-
+          
+          
+          this.$store.commit('setOngoingQuiz', true)
+          this.$store.commit('setActiveQuiz', quiz_id)
           this.$router.push(`/quiz/${quiz_id}`);
         } else {
           this.$store.commit('setAlert', { message: "Failed to fetch details", type: "alert-danger" });
@@ -135,7 +169,6 @@ const user_dashboard = {
         console.error("Error: " + error);
       }
     },
-
 
     // Get all subjects .get()
     async getSubjects() {
