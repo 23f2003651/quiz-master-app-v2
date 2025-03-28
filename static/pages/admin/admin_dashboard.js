@@ -41,6 +41,7 @@ const admin_dashboard = {
                 <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#addChapterModal">➕ Add Chapter</button></li>
                 <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#editSubjectModal"><i class="fas fa-pencil-alt"></i> Edit</button></li>
                 <li><button class="dropdown-item text-danger" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#deleteSubjectModal"><i class="fas fa-trash-alt"></i> Delete</button></li>
+                <li><button class="dropdown-item" @click="setSubject(subject)" data-bs-toggle="modal" data-bs-target="#infoSubjectModal"><i class="fa-solid fa-circle-info"></i> Info</button></li>
               </ul>
             </div>
           </div>
@@ -163,6 +164,17 @@ const admin_dashboard = {
       </template>
     </modal-component>
 
+    <!-- Subject Info -->
+    <modal-component modal-id="infoSubjectModal" title="Subject Info">
+      <template v-slot:body>
+        <p><b>Name :</b> {{ currSubject.name }}</p>
+        <p><b>Description :</b> {{ currSubject.description }}</p>
+        <p><b>Total Chapters :</b> {{ totalChapters(currSubject) || 0 }}</p>
+      </template>
+
+      <template v-slot:footer>
+      </template>
+    </modal-component>
 
   </div>
   `,
@@ -195,6 +207,10 @@ const admin_dashboard = {
   },
 
   methods: {
+
+    totalChapters(subject) {
+      return subject && Array.isArray(subject.chapters) ? subject.chapters.length : 0;
+    },
 
     // Set the current subject
     setSubject(subject) {

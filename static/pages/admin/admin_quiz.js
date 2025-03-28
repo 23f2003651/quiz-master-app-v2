@@ -48,8 +48,8 @@ const admin_quiz = {
 
           <div class="collapse" :id="'quiz-'+quiz.id">
             <div>
-              
-            <div v-if="quiz.questions.length === 0" class="card card-body">
+
+            <div v-if="quiz.questions.length === 0" class="text-center text-muted">
               No questions available
             </div>
 
@@ -234,9 +234,10 @@ const admin_quiz = {
     <!-- Quiz Info -->
     <modal-component modal-id="infoQuizModal" title="Quiz Info">
       <template v-slot:body>
-        <p>Title : {{ currQuiz.title }}</p>
-        <p>Duration : {{ currQuiz.duration }}</p>
-        <p>Date : {{ formatDate(currQuiz.date_of_quiz) }}</p>
+        <p><b>Title :</b> {{ currQuiz.title }}</p>
+        <p><b>Duration :</b> {{ currQuiz.duration }}</p>
+        <p><b>Total Questions :</b> {{totalQuestions(currQuiz) || 0}}</p>
+        <p><b>Date :</b> {{ formatDate(currQuiz.date_of_quiz) }}</p>
       </template>
 
       <template v-slot:footer>
@@ -288,8 +289,12 @@ const admin_quiz = {
   },
 
   methods: {
+    totalQuestions(quiz) {
+      return quiz && Array.isArray(quiz.questions) ? quiz.questions.length : 0;
+    },
+
     formatDate(date) {
-      const utcDate = new Date(date + "Z"); // Ensure it's treated as UTC
+      const utcDate = new Date(date + "Z");
       return utcDate.toLocaleString('en-GB', { 
         year: 'numeric', 
         month: 'short', 
@@ -297,7 +302,7 @@ const admin_quiz = {
         hour: '2-digit', 
         minute: '2-digit',
         hour12: true,
-        timeZone: 'Asia/Kolkata'  // Force UTC to avoid conversion
+        timeZone: 'Asia/Kolkata'
       });
     },
 
