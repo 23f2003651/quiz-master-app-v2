@@ -180,13 +180,12 @@ const quiz_page = {
           this.$store.commit('setOngoingQuiz', false)
           this.$store.commit('setActiveQuiz', null)
           this.$store.commit('setAlert', { message: "Answers submitted", type: "alert-success" });
+          this.$router.push('/user-scores')
         }
       } catch (error) {
         console.error(error);
-        this.$store.commit('setAlert', { message: "Failed to submit answers", type: "alert-danger" });
+        this.$router.push('/user-dashboard')
       }
-
-      this.$router.push('/user-scores')
     }
   },
 

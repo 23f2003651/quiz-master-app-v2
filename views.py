@@ -115,6 +115,12 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
         subject_id = data.get('subject_id')        
         user_id = current_user.id
         
+        check_user_score = ScoresHistory.query.filter_by(user_id=user_id, quiz_id=quiz_id).all()
+        print(check_user_score)
+        if check_user_score:
+            print("Yes exists")
+            return jsonify({"error": "Quiz already attempted"})
+        
         if not chapter_id or not subject_id or not quiz_id:
             return jsonify({"error": "Invalid request"}), 400
         
@@ -141,7 +147,7 @@ def create_view(app, user_datastore: SQLAlchemyUserDatastore):
     @cache.memoize(timeout=5)
     def get_scores(id):
 
-        scores = Scores.query.filter_by(user_id=id).all()
+        scores = ScoresHistory.query.filter_by(user_id=id).all()
 
         if not scores:
             return jsonify({"message": "No scores found for this user"}), 404

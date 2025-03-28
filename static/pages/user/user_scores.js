@@ -113,9 +113,6 @@ const user_scores = {
     getValue(quiz_id, questionID) {
       for (let index = 0; index < this.scores.length; index++) {
         if (this.scores[index].quiz_id === quiz_id) {
-          console.log(quiz_id)
-          console.log(questionID)
-          console.log(this.scores[index].user_answers[questionID])
           return this.scores[index].user_answers[questionID];
         }        
       }
